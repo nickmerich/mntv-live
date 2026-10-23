@@ -49,33 +49,29 @@
 
       <aside class="panel">
         <div class="lcd well" id="lcd">
-          <div class="lcd-cell"><div class="seg ghost">88</div><div class="seg" id="lcdA">00</div><div class="lcd-l" id="lcdAl">live now</div></div>
+          <div class="lcd-cell"><div class="seg ghost">88</div><div class="seg" id="lcdA">12</div><div class="lcd-l" id="lcdAl">min</div></div>
           <div class="lcd-mid" id="lcdMid"></div>
-          <div class="lcd-cell r"><div class="seg ghost p">88</div><div class="seg p" id="lcdB">00</div><div class="lcd-l p" id="lcdBl">day streak</div></div>
+          <div class="lcd-cell r"><div class="seg ghost p">88</div><div class="seg p" id="lcdB">00</div><div class="lcd-l p" id="lcdBl">sec</div></div>
         </div>
 
-        <div class="controls">
+        <div class="deck">
           <button class="key" data-k="0"><span class="cap"><span class="ico" id="k0i"></span></span><span class="led"></span><span class="legend" id="k0l"></span></button>
           <button class="key" data-k="1"><span class="cap"><span class="ico" id="k1i"></span></span><span class="led"></span><span class="legend" id="k1l"></span></button>
-          <div class="knob-wrap">
-            <div class="knob-ticks"></div>
-            <button class="knob" id="knob" aria-label="Knob: turn to change channel, press for action">
-              <span class="knurl"></span><span class="cap-metal"></span>
-              <span class="ind" id="knobInd"></span>
-              <span class="knob-lab" id="knobLab">spin</span>
-            </button>
-            <div class="etch knob-hint">turn · press</div>
+          <div class="kn big" id="kMatch"><div class="scale"></div>
+            <button class="knob" aria-label="Match: turn to pick who, press to call someone grinding"><span class="knurl"></span><span class="cap-metal"></span><span class="ind"></span><span class="knob-lab">match</span></button>
           </div>
           <button class="key" data-k="2"><span class="cap"><span class="ico" id="k2i"></span></span><span class="led"></span><span class="legend" id="k2l"></span></button>
           <button class="key dark" data-k="3"><span class="cap"><span class="ico" id="k3i"></span></span><span class="led"></span><span class="legend" id="k3l"></span></button>
         </div>
 
-        <div class="row2">
-          <div class="grille" aria-hidden="true"></div>
-          <div class="fader well" id="fader" aria-label="aux volume"><span class="slot"></span><span class="fill" id="faderFill"></span><span class="fcap" id="faderCap"></span></div>
-          <div class="vu well" id="vu"></div>
+        <div class="minis">
+          <div class="kn mini chicken" id="kAir"><div class="scale"></div><button class="knob" aria-label="On air: start or end"><span class="knurl"></span><span class="cap-metal"></span><span class="ind"></span></button><div class="kn-l">on air</div></div>
+          <div class="kn mini" id="kTimer"><div class="scale"></div><button class="knob" aria-label="Timer: turn to set minutes, press to start or pause"><span class="knurl"></span><span class="cap-metal"></span><span class="ind"></span></button><div class="kn-l">timer</div></div>
+          <div class="kn mini" id="kVol"><div class="scale"></div><button class="knob" aria-label="Volume"><span class="knurl"></span><span class="cap-metal"></span><span class="ind"></span></button><div class="kn-l">volume</div></div>
+          <div class="kn mini red" id="kAdlib"><div class="scale"></div><button class="knob" aria-label="Adlib: turn to pick, press to fire"><span class="knurl"></span><span class="cap-metal"></span><span class="ind"></span></button><div class="kn-l">adlib</div></div>
         </div>
-        <div class="row2-l etch"><span>speaker</span><span>aux</span><span>vol</span></div>
+
+        <div class="vu well" id="vu"></div>
       </aside>
 
       <footer class="marq well" id="marq"><div class="marq-run" id="marqRun"></div><div class="dots"></div></footer>
@@ -84,7 +80,7 @@
     </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div class="hint etch-dark" id="hint">← → surf · space spin · r record · g guide · 1-4 keys</div>
+  <div class="hint etch-dark" id="hint">← → surf · space match · o on air · t timer · a adlib · g guide</div>
 </div>
 <script src="app.js"></script>
 </body>
