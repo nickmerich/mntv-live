@@ -22,8 +22,23 @@ const M = [
   { id: 'lux', role: 'artist', co: 'dj · producer', k: 'r', grind: 'tour routing', gl: 2900, drop: { len: 55, win: 'first residency booked', stuck: 'saying no to bad gigs', ask: 'how did you set your floor rate?' } },
   { id: 'nova', role: 'founder', co: 'ticketing for small rooms', k: 'y', grind: 'onboarding flow', gl: 1600, drop: { len: 60, win: '40 venues signed', stuck: 'artists ignore our emails', ask: 'intro to 3 artists who tour small rooms?' } },
   { id: 'sol', role: 'artist', co: 'producer · film', k: 'c', grind: null, drop: { len: 49, win: 'scored my first short film', stuck: 'too many unfinished ideas', ask: 'want to co-write one track this month?' } },
+  { id: 'otis', role: 'artist', co: 'crate digger · samples', k: 'p', grind: 'flipping a soul sample', gl: 1310, drop: { len: 44, win: 'beat tape hit 20k plays', stuck: 'clearing samples', ask: 'anyone cleared a sample cheaply?' } },
   { id: 'bea', role: 'tech', co: 'ai mastering', k: 'm', grind: 'mastering api', gl: 980, drop: { len: 38, win: 'mastering beta hit 1k tracks', stuck: 'need real artist feedback', ask: 'send me a track, i will master it free' } },
 ];
+const SKILL_OF = {
+  theo: { title: 'book a 20-date tour without an agent', tags: ['touring', 'booking'], steps: ['map 3 anchor cities where you already sell 100+ tickets', 'fill the gaps with 150-cap rooms that book locals on weeknights', 'email talent buyers in batches of 10 with one link: draw, dates, guarantee ask', 'confirm in writing, then route backwards from the anchors'] },
+  jules: { title: 'build a laptop-only live rig', tags: ['live', 'gear'], steps: ['bounce stems into 4 groups: drums, bass, music, vox', 'one controller, one interface, nothing else on stage', 'map 8 scenes to pads so the set survives a crash', 'run the full set twice a week at show volume'] },
+  maya: { title: 'price sync licenses under 10k', tags: ['sync', 'pricing'], steps: ['anchor on use: background, featured or theme', 'quote one-stop only if you own master and publishing', 'start at 2x your floor and leave room to give', 'put term, territory and media in the first reply'] },
+  ren: { title: 'launch a paid fan club in a weekend', tags: ['fans', 'revenue'], steps: ['pick one perk fans already ask for', 'price at the cost of one drink a month', 'invite your top 100 by dm, not a post', 'ship the first perk inside 48 hours'] },
+  kai: { title: 'land a pilot with free visuals', tags: ['partnerships', 'creative tech'], steps: ['pick an artist with a show in 3 weeks', 'send a 15-second mock built on their single', 'ask for logo placement and footage rights, not money', 'turn the show clips into your case study'] },
+  ari: { title: 'sell out a 300-cap room in your city', tags: ['shows', 'local'], steps: ['announce 5 weeks out with a limited early tier', 'have 10 friends each sell 10 tickets', 'post the countdown every 3 days with a real number', 'add a local opener who brings 40 people'] },
+  dev: { title: 'write an investor update people answer', tags: ['fundraising', 'investors'], steps: ['open with one number that moved', 'three bullets: wins, misses, what is next', 'one specific ask with a name in it', 'send the same weekday every month'] },
+  lux: { title: 'set your floor rate and say no', tags: ['pricing', 'booking'], steps: ['add up travel, time and gear for one gig', 'double it and call that your floor', 'say no with a counter, never just no', 'track which nos turned into better yeses'] },
+  nova: { title: 'get artists to answer cold emails', tags: ['outreach', 'sales'], steps: ['subject line is their last release name', 'one sentence on why them, one on what you give', 'no deck; offer a 10-minute call link', 'follow up once at day 4 with a new reason'] },
+  sol: { title: 'finish ideas with the one-track rule', tags: ['creative process'], steps: ['pick one idea per month, archive the rest', 'set a public due date with one person', 'finish at 80 percent and ship', 'review in the next session, then start the next'] },
+  bea: { title: 'get feedback from 50 artists in a week', tags: ['research', 'product'], steps: ['offer something free they want (a master)', 'ask 3 questions max after delivery', 'record the calls with permission', 'tag every answer into a shared sheet'] },
+  otis: { title: 'clear a sample without a label', tags: ['samples', 'legal'], steps: ['find the publisher and master owner separately', 'ask early with the exact seconds used', 'offer a flat fee plus a small split', 'never release until both signatures are in'] },
+};
 const CY = { id: 'c.y.', role: 'executive producer', co: 'music nerd', k: 'r' };
 const YOU = { id: 'you', role: 'you', co: 'your channel', k: 'y' };
 const PROMPTS = ['what are you grinding on?', 'what is the one blocker today?', 'trade one skill, right now', 'make something in 30 days?', 'who should the other meet?', 'ship it by friday?'];
@@ -33,11 +48,11 @@ const TIMES = [5, 10, 15, 25, 45, 60];
 const ADLIBS = [['yeah', 'YEAH!'], ['let’s go', 'LET’S GO!'], ['horn', '📯 HORN'], ['rewind', '⏪ REWIND'], ['scratch', 'SCRATCH'], ['boom', 'BOOM']];
 
 /* ---------------- state (in memory) ---------------- */
-const S = { tapes: [{ who: 'jules', date: 'oct 21', min: 12 }, { who: 'ren', date: 'oct 20', min: 9 }, { who: 'kai', date: 'oct 18', min: 15 }, { who: 'c.y.', date: 'oct 16', min: 60, replay: true }],
+const S = { skills: [['maya', 'tape 06 · oct 18', 31], ['dev', 'wk 43 drop', 22], ['nova', 'tape 04 · oct 15', 18], ['theo', 'tape 02 · oct 9', 27], ['otis', 'tape 05 · oct 17', 12], ['lux', 'wk 42 drop', 15], ['bea', 'tape 03 · oct 11', 9], ['kai', 'tape 07 · oct 18', 14]].map(([by, from, uses]) => ({ by, from, uses, ...SKILL_OF[by] })), installed: ['dev'], tapes: [{ who: 'jules', date: 'oct 21', min: 12 }, { who: 'ren', date: 'oct 20', min: 9 }, { who: 'kai', date: 'oct 18', min: 15 }, { who: 'c.y.', date: 'oct 16', min: 60, replay: true }],
   streak: 12, lastDay: '', saved: 3, dropped: false, weekStreak: 13, wire: [], hands: 7, collabs: 1, helped: [], grindMin: 0 };
 const R = { on: false, mode: 'lounge', ch: 0, sel: 0, partner: null, modeT: null, auto: null, cam: null, rec: null, chunks: [], blob: null, recOn: false, recLeft: 60, chipsLit: {}, playStep: 0,
   cyLive: false, pocket: false, auxIdx: 0,
-  air: false, airStart: 0, timerIdx: 3, timerLeft: 25 * 60, timerRun: false, vol: 6, adlib: 1, filter: 0, incoming: null, ringT: null };
+  skillsOn: true, air: false, airStart: 0, timerIdx: 3, timerLeft: 25 * 60, timerRun: false, vol: 6, adlib: 1, filter: 0, incoming: null, ringT: null };
 const today = () => new Date().toISOString().slice(0, 10);
 const pad = n => String(Math.max(0, Math.floor(n))).padStart(2, '0');
 const fmt = n => n >= 60 ? '1:00' : '0:' + String(n).padStart(2, '0');
@@ -121,12 +136,18 @@ function startMusic() {
 /* ---------------- dom helpers ---------------- */
 const view = $('#view'), crt = $('#crt');
 const sil = c => `<svg class="sil" viewBox="0 0 420 380" aria-hidden="true"><circle cx="210" cy="118" r="86" fill="${c}"/><path d="M28 380c0-112 82-172 182-172s182 60 182 172z" fill="${c}"/></svg>`;
+const photo = m => m && m.id !== 'you' && m.id !== 'c.y.' ? `assets/feeds/${m.id}.webp` : null;
 function feed(m, { talk = false, cam = false, off = false } = {}) {
   if (off) return `<div class="feed noise"></div>`;
-  const p = PAL[m.k || 'p'];
-  const inner = cam && R.cam ? `<video autoplay muted playsinline></video>` : (m === YOU ? `<div class="avatar" style="background:${p[4]}">y</div>` : sil(p[3]));
-  return `<div class="feed ${talk ? 'talk' : ''}" style="background:linear-gradient(160deg,${p[0]} 0%,${p[1]} 55%,${p[2]} 100%)"><div class="lightleak"></div>${inner}</div>`;
+  const p = PAL[m.k || 'p'], ph = photo(m);
+  const inner = cam && R.cam ? `<video autoplay muted playsinline></video>` :
+    ph ? `<div class="kbw" style="--d:${14 + (m.id.length * 3) % 9}s"><img class="ph" src="${ph}" alt="${m.id}" draggable="false"></div>` :
+    (m === YOU ? `<div class="avatar" style="background:${p[4]}">you</div>` : sil(p[3]));
+  return `<div class="feed ${talk ? 'talk' : ''}" style="background:linear-gradient(160deg,${p[0]} 0%,${p[1]} 55%,${p[2]} 100%)">${inner}<div class="lightleak"></div></div>`;
 }
+const face = (m, sz = 40) => photo(m) ? `<span class="face" style="width:${sz}px;height:${sz}px;background-image:url(${photo(m)})"></span>` : `<span class="face" style="width:${sz}px;height:${sz}px;background:${PAL[(m && m.k) || 'r'][4]}"></span>`;
+const l3 = (m, sub, clock, tag = 'LIVE') => `<div class="l3"><span class="live-tag">${tag}</span><b>${m.id}</b><span class="l3s">${sub}</span>${clock ? `<span class="l3t" id="grindClock">${clock}</span>` : ''}</div>`;
+function chFlash(n) { const d = document.createElement('div'); d.className = 'chflash'; d.textContent = 'CH ' + n; $('#reacts').appendChild(d); setTimeout(() => d.remove(), 1100); crt.classList.remove('roll'); void crt.offsetWidth; crt.classList.add('roll'); }
 function attachCam() { if (R.cam) view.querySelectorAll('video:not([src])').forEach(v => { v.srcObject = R.cam; v.play().catch(() => {}); }); }
 async function getCam() { if (R.cam) return R.cam; try { R.cam = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false }); } catch { R.cam = null; } return R.cam; }
 function stopCam() { if (R.cam) { R.cam.getTracks().forEach(t => t.stop()); R.cam = null; } }
@@ -147,7 +168,7 @@ function lcdRender() {
   const s = R.timerLeft;
   $('#lcdA').textContent = pad(s / 60); $('#lcdB').textContent = pad(s % 60);
   $('#lcdAl').textContent = R.timerRun ? 'min left' : 'min set'; $('#lcdBl').textContent = 'sec';
-  $('#lcdMid').textContent = R.mode === 'call' && R.partner ? `W/ ${R.partner.id.toUpperCase()}` : R.air ? (R.timerRun ? 'ON AIR · GRINDING' : 'ON AIR · PAUSED') : R.timerRun ? 'TIMER RUNNING' : `${grinding().length} GRINDING`;
+  $('#lcdMid').textContent = R.mode === 'skills' || R.mode === 'skill' ? `${S.skills.length} SKILLS` : R.mode === 'call' && R.partner ? `W/ ${R.partner.id.toUpperCase()}` : R.air ? (R.timerRun ? 'ON AIR · GRINDING' : 'ON AIR · PAUSED') : R.timerRun ? 'TIMER RUNNING' : `${grinding().length} GRINDING`;
 }
 function lcdFlash(a, al, b, bl, mid) { lcdTemp = { a, al, b, bl, mid }; lcdRender(); clearTimeout(lcdTempT); lcdTempT = setTimeout(() => { lcdTemp = null; lcdRender(); }, 1300); }
 setInterval(() => {
@@ -156,7 +177,7 @@ setInterval(() => {
     R.timerLeft--; if (R.air) S.grindMin += 1 / 60;
     if (R.timerLeft <= 0) timerDone();
   }
-  if (R.on) { lcdRender(); const g = $('#grindClock'); if (g) g.textContent = 'GRIND ' + mmss(curChan().gl || 0); }
+  if (R.on) { lcdRender(); const g = $('#grindClock'); if (g) g.textContent = R.mode === 'lounge' && curChan() === YOU ? mmss(R.timerLeft) : mmss(curChan().gl || 0); }
 }, 1000);
 function timerDone() {
   R.timerRun = false; R.timerLeft = TIMES[R.timerIdx] * 60; SFX.alarm(); flashText('TIME!');
@@ -175,10 +196,10 @@ function keys(arr, matchLabel = 'match') {
 function marquee() { const items = [...S.wire.slice(-4).reverse(), ...WIRE0]; const html = items.map(t => `<span>${t}</span>`).join(''); $('#marqRun').innerHTML = html + html; }
 function strip() {
   const chans = [{ ...CY, n: '00' }, ...M.map((m, i) => ({ ...m, n: pad(i + 1) })), { ...YOU, n: pad(M.length + 1) }];
-  $('#strip').innerHTML = chans.map((m, i) => {
+  $('#strip').innerHTML = `<button class="ch skch ${R.mode === 'skills' || R.mode === 'skill' ? 'on' : ''}" data-ch="sk"><span class="sw" style="display:grid;place-items:center;background:#1d1b20">🧠</span><span class="n">SK</span>skills<span class="cnt">${S.skills.length}</span></button>` + chans.map((m, i) => {
     const live = m.id === 'c.y.' ? R.cyLive : m.id === 'you' ? R.air : !!m.grind;
     const p = PAL[m.k], on = (R.mode === 'cy' && i === 0) || (R.mode === 'lounge' && i === R.ch + 1);
-    return `<button class="ch ${on ? 'on' : ''}" data-ch="${i}"><span class="sw ${live ? '' : 'off noise'}" style="${live ? `background:linear-gradient(160deg,${p[0]},${p[2]})` : ''}"></span><span class="n">${m.n}</span>${m.id}${live ? '<span class="live"></span>' : ''}</button>`;
+    return `<button class="ch ${on ? 'on' : ''}" data-ch="${i}"><span class="sw ${live ? '' : 'off noise'}" style="${live ? (photo(m) ? `background:url(${photo(m)}) center/cover` : `background:linear-gradient(160deg,${p[0]},${p[2]})`) : ''}"></span><span class="n">${m.n}</span>${m.id}${live ? '<span class="live"></span>' : ''}</button>`;
   }).join('');
   const on = $('#strip .ch.on'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
@@ -191,45 +212,48 @@ const MODES = {
   lounge() {
     const m = curChan(), isYou = m === YOU, live = isYou ? true : !!m.grind;
     view.innerHTML = feed(m, { off: !live, cam: isYou }) +
-      `<div class="osd" style="left:30px;top:26px;font-size:32px">CH ${pad(R.ch + 1)}</div>` +
-      (live && !isYou ? `<div class="osd" id="grindClock" style="left:30px;top:76px;font-size:20px;color:var(--pink);text-shadow:0 0 10px rgba(255,117,216,.8)">GRIND ${mmss(m.gl)}</div>` : '') +
-      (!live ? `<div class="bigname" style="left:30px;bottom:74px;font-size:96px;opacity:.85">${m.id}</div><div class="osd sans" style="left:34px;bottom:40px;color:#ff3b5c;text-shadow:0 0 10px rgba(255,59,92,.7)">off air · not grinding right now</div>`
-        : `<div class="bigname" style="left:30px;bottom:74px;font-size:110px">${m.id}</div><div class="osd sans" style="left:34px;bottom:40px">${isYou ? (R.air ? 'you are on air · matchable' : 'turn on air to get matched') : `${m.co} · grinding`}</div>`) +
-      st(`day ${S.streak} 🔥`, '', 'right:34px;top:30px', -6) + st(`${grinding().length + (R.air ? 1 : 0)} grinding`, 'm', 'right:56px;top:96px', 5) +
-      (live && !isYou ? st('on: ' + m.grind, 'w', 'right:40px;top:162px', -2) : '');
+      `<div class="osd" style="left:30px;top:26px;font-size:30px">CH ${pad(R.ch + 1)}</div>` +
+      (live ? (isYou ? l3(YOU, R.air ? 'on air · matchable' : 'off air · turn on air to get matched', R.air ? mmss(R.timerLeft) : '', R.air ? 'LIVE' : 'YOU') : l3(m, `${m.co} · ${m.grind}`, mmss(m.gl)))
+        : `<div class="l3 off"><span class="live-tag off">OFF</span><b>${m.id}</b><span class="l3s">not grinding right now</span></div>`) +
+      st(`🔥 ${S.streak}`, '', 'right:30px;top:26px;font-size:24px', -6) + st(`${grinding().length + (R.air ? 1 : 0)} grinding`, 'm', 'right:44px;top:84px', 4) +
+      (live && !isYou && SKILL_OF[m.id] ? `<button class="skchip" data-sk="${m.id}">🧠 ${SKILL_OF[m.id].title}</button>` : '');
+    const sc = view.querySelector('.skchip'); if (sc) sc.addEventListener('click', () => { SFX.key(); openSkill(sc.dataset.sk); });
     if (isYou) getCam().then(c => { if (c && R.mode === 'lounge' && curChan() === YOU) { view.querySelector('.feed').outerHTML = feed(YOU, { cam: true }); attachCam(); } });
-    keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '💗', l: 'love', fn: () => react('💗', 3) }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '📼', l: 'shelf', fn: () => go('shelf') }]);
+    keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '🧠', l: 'skills', fn: () => go('skills') }, { i: '📼', l: 'shelf', fn: () => go('shelf') }]);
     R.auto = setInterval(() => { if (live && Math.random() < .5) react(['🔥', '💗', '🎧', '😂'][Math.random() * 4 | 0]); }, 2600);
   },
   tuning({ who }) {
     const [label, role] = FILTERS[R.filter];
     let pool = grinding().filter(m => !role || m.role === role).filter(m => !R.partner || m.id !== R.partner.id || grinding().length < 2);
-    if (!pool.length) { toast(`nobody in ${label} is grinding right now · turn match to anyone`); go('lounge'); return; }
+    if (!pool.length && !who) { toast(`nobody in ${label} is grinding right now · turn match to anyone`); go('lounge'); return; }
     const p = who || pool[Math.random() * pool.length | 0];
-    view.innerHTML = `<div class="feed noise"></div><div class="osd" style="left:50%;top:42%;transform:translateX(-50%);font-size:42px">MATCHING</div>` + st(`calling a ${label === 'anyone' ? 'member' : label.replace(/s$/, '')} who is grinding`, 'w', 'left:50%;top:57%;transform:translateX(-50%)');
-    SFX.static(1.2); let k = 0; R.modeT = setInterval(() => { SFX.tick(); if (++k > 8) { clearInterval(R.modeT); R.partner = p; go('call'); } }, 130);
+    view.innerHTML = `<div class="feed noise"></div><div class="slotwin"><div class="slot" id="slot">${[...pool, ...pool, ...pool].slice(0, 12).map(m => face(m, 120)).join('')}</div></div><div class="osd sans" style="left:50%;bottom:40px;transform:translateX(-50%);font-size:18px;white-space:nowrap">matching · ${label}</div>`;
+    SFX.static(1.2); let k = 0; const slot = $('#slot'); R.modeT = setInterval(() => { SFX.tick(); if (slot) slot.style.transform = `translateX(${-k * 136}px)`; if (++k > 8) { clearInterval(R.modeT); R.partner = p; if (slot) { slot.innerHTML = face(p, 120); slot.style.transition = 'none'; slot.style.transform = 'none'; slot.classList.add('hit'); } SFX.win(); R.modeT = setTimeout(() => go('call'), 700); } }, 140);
     keys([{ i: '🔥', l: 'fire', fn() {} }, { i: '💗', l: 'love', fn() {} }, { i: '🎧', l: 'pass aux', fn() {} }, { i: '✕', l: 'cancel', fn: () => go('lounge') }], 'end');
     getCam();
   },
   call() {
-    const p = R.partner; bumpStreak(); staticBurst(260);
-    if (!R.timerRun) { R.timerRun = true; toast(`timer started · ${TIMES[R.timerIdx]} min`); }
+    const p = R.partner; bumpStreak(); staticBurst(260); hideRing();
+    if (!R.timerRun) R.timerRun = true;
     R.callStart = Date.now();
-    view.innerHTML = `<div class="split">${feed(p, { talk: true })}${feed(YOU, { cam: true })}</div>` +
-      `<div class="bigname" style="left:26px;bottom:26px;font-size:64px">${p.id}</div><div class="bigname" style="left:calc(50% + 26px);bottom:26px;font-size:64px">you</div>` +
-      `<div class="osd sans" style="left:30px;top:24px">${p.co}</div><div class="osd sans" style="left:30px;top:46px;color:var(--pink)">grinding on: ${p.grind}</div>` +
-      st(PROMPTS[Math.random() * PROMPTS.length | 0], 'w', 'left:50%;top:84px;transform:translateX(-50%);font-size:26px;padding:12px 24px');
-    attachCam();
+    view.innerHTML = feed(p, { talk: true }) + l3(p, `${p.co} · ${p.grind}`, '') +
+      `<div class="pip">${feed(YOU, { cam: true })}<span class="pip-l">you</span></div>` +
+      (R.skillsOn ? `<div class="skrec"><span class="dotk"></span>skills rec · both on</div>` : '') +
+      st(PROMPTS[Math.random() * PROMPTS.length | 0], 'w', 'left:50%;top:28px;transform:translateX(-50%);font-size:26px;padding:12px 24px');
+    attachCam(); getCam().then(() => { if (R.mode === 'call') { const pf = view.querySelector('.pip .feed'); if (pf && R.cam && !pf.querySelector('video')) { pf.outerHTML = feed(YOU, { cam: true }); attachCam(); } } });
+    if (R.onboard === 1) setOnboard(2);
     keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '💗', l: 'love', fn: () => react('💗', 3) }, { i: '🎧', l: 'pass aux', fn: passAux }, { i: '✕', l: 'end', fn: () => go('after') }], 'end');
-    R.auto = setInterval(() => { const r = Math.random(); if (r < .45) react(['😂', '🔥', '💗', '🎧'][Math.random() * 4 | 0]); else if (r < .53) { const a = Math.random() * ADLIBS.length | 0; ADLIB_FX[a](); flashText(ADLIBS[a][1]); toast(`${p.id} hit an adlib`); } }, 2600);
+    R.auto = setInterval(() => { const r = Math.random(); if (r < .45) react(['😂', '🔥', '💗', '🎧'][Math.random() * 4 | 0]); else if (r < .52) { const a = Math.random() * ADLIBS.length | 0; ADLIB_FX[a](); flashText(ADLIBS[a][1]); } }, 2600);
   },
   after() {
     const p = R.partner || M[0]; const mins = Math.max(1, Math.round((Date.now() - (R.callStart || Date.now())) / 60000));
     S.tapes.unshift({ who: p.id, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toLowerCase(), min: mins });
     view.innerHTML = `<div class="split" style="filter:brightness(.3) blur(3px)">${feed(p)}${feed(YOU)}</div>` +
-      `<div class="tape bigtape spinning"><div class="lb" style="background:${PAL[p.k][4]}">${p.id} × you<small>tape ${pad(S.tapes.length)} · ${mins} min · ${S.tapes[0].date}</small></div><div class="reels"><div class="reel"></div><div class="reel"></div></div></div>` +
-      st('new tape on your shelf', 'm', 'left:50%;bottom:34px;transform:translateX(-50%)', 2);
+      `<div class="tape bigtape spinning"><div class="lb" style="background:${PAL[p.k][4]}"><span class="lbf">${face(p, 54)}</span>${p.id} × you<small>tape ${pad(S.tapes.length)} · ${mins} min · ${S.tapes[0].date}</small></div><div class="reels"><div class="reel"></div><div class="reel"></div></div></div>` +
+      st('new tape on your shelf', 'm', R.skillsOn ? 'left:30px;bottom:30px' : 'left:50%;bottom:34px;transform:translateX(-50%)', 2);
     SFX.win();
+    if (R.skillsOn && SKILL_OF[p.id]) setTimeout(() => { if (R.mode === 'after') captureSkill(p, mins); }, 1500);
+    else if (!R.skillsOn) setTimeout(() => { if (R.mode === 'after') view.insertAdjacentHTML('beforeend', st('skills rec was off · this playbook is gone', 'r', 'left:50%;top:30px;transform:translateX(-50%)', -2)); }, 1200);
     keys([{ i: '🤝', l: 'collab', fn: collab }, { i: '👋', l: 'later', fn: () => go('lounge') }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '📼', l: 'shelf', fn: () => go('shelf') }]);
     function collab() {
       if (KEYS[0].lit) return; KEYS[0].lit = true; $('.key[data-k="0"]').classList.add('lit'); toast(`collab sent to ${p.id}`);
@@ -244,13 +268,13 @@ const MODES = {
           (d ? `<div class="len">${fmt(m === YOU ? (R.myDrop ? R.myDrop.len : 60) : m.drop.len)}</div><div class="tag" style="color:${m.id === 'kai' ? 'var(--pink)' : 'var(--mint)'}">${m.id === 'kai' ? 'PICK' : 'NEW'}</div>` : `<div class="tag" style="color:#ff3b5c">OFF AIR</div>`) +
           `<div class="co">${m.co}</div><div class="nm">${m.id}</div></div>`; }).join('') + `</div>`;
     view.querySelectorAll('.tile').forEach(t => t.addEventListener('click', () => { R.sel = +t.dataset.i; SFX.key(); go('play', {}); }));
-    keys([{ i: '▶️', l: 'play all', fn: () => { R.sel = 0; go('play', { auto: true }); } }, { i: '🙋', l: 'asks', fn: asks }, { i: '⏺', l: 'record', fn: () => go('record'), lit: !S.dropped }, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]);
+    keys([{ i: '▶️', l: 'play all', fn: () => { R.sel = 0; go('play', { auto: true }); } }, { i: '🙋', l: 'asks', fn: asks }, { i: '🔴', l: 'record', fn: () => go('record'), lit: !S.dropped }, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]);
   },
   play({ auto }) {
     const list = all(), m = list[R.sel], isYou = m === YOU;
     if ((isYou && !S.dropped) || (!isYou && !m.drop)) {
       view.innerHTML = feed(m, { off: true }) + `<div class="bigname" style="left:30px;bottom:74px;font-size:96px">${m.id}</div>` + st('no drop this week', 'r', 'right:34px;top:30px', -4) + `<div class="osd sans" style="left:34px;bottom:40px;color:#ff3b5c">off air · due friday</div>`;
-      keys([{ i: '👋', l: 'nudge', fn: () => toast(isYou ? 'press record on the guide' : `nudged ${m.id} · due friday`) }, { i: '⏭', l: 'next', fn: () => nextDrop(auto) }, { i: '⏺', l: 'record', fn: () => go('record') }, { i: '⏹', l: 'back', fn: () => go('guide') }]);
+      keys([{ i: '👋', l: 'nudge', fn: () => toast(isYou ? 'press record on the guide' : `nudged ${m.id} · due friday`) }, { i: '⏭', l: 'next', fn: () => nextDrop(auto) }, { i: '🔴', l: 'record', fn: () => go('record') }, { i: '⏹', l: 'back', fn: () => go('guide') }]);
       if (auto) R.modeT = setTimeout(() => nextDrop(true), 1800); return;
     }
     const d = isYou ? R.myDrop : m.drop, steps = [['win', d.win, 'var(--mint)'], ['stuck', d.stuck, 'var(--cyan)'], ['ask', d.ask, 'var(--pink)']];
@@ -267,19 +291,39 @@ const MODES = {
       view.innerHTML = feed(YOU, { cam: true }) + (R.recOn ? '<div class="recring"></div>' : '') +
         `<div class="osd" style="left:30px;top:26px;font-size:30px">${R.recOn ? 'REC 00:' + pad(R.recLeft) : 'CH ' + pad(M.length + 1)}</div>` +
         st('your weekly drop', 'w', 'left:30px;top:78px;font-size:30px', -3) + st('due fri 🔔', '', 'right:34px;top:30px', -6) + st(`wk ${S.weekStreak} in a row`, 'm', 'right:56px;top:96px', 5) +
-        (R.recOn ? '' : st('press ⏺ to record 60 sec', 'c', 'left:50%;top:52%;transform:translateX(-50%)')) +
+        (R.recOn ? '' : st('press 🔴 to record 60 sec', 'c', 'left:50%;top:52%;transform:translateX(-50%)')) +
         `<div class="chips">${['win', 'stuck', 'ask'].map((c, i) => `<span class="chip ${R.chipsLit[c] ? 'lit' : ''}" style="background:${['var(--mint)', 'var(--cyan)', 'var(--pink)'][i]}">1 ${c}</span>`).join('')}</div>`;
       attachCam();
     };
     R.recRender = render; render(); getCam().then(() => { if (R.mode === 'record') render(); });
     const mark = c => { R.chipsLit[c] = true; view.querySelectorAll('.chip').forEach((el, i) => el.classList.toggle('lit', !!R.chipsLit[['win', 'stuck', 'ask'][i]])); };
-    keys([{ i: '⏺', l: 'rec / send', fn: () => R.recOn ? sendDrop() : startRec(), lit: true }, { i: '🏆', l: 'win', fn: () => mark('win') }, { i: '🧱', l: 'stuck', fn: () => mark('stuck') }, { i: '🙋', l: 'ask', fn: () => mark('ask') }]);
+    keys([{ i: '🔴', l: 'rec / send', fn: () => R.recOn ? sendDrop() : startRec(), lit: true }, { i: '🏆', l: 'win', fn: () => mark('win') }, { i: '🧱', l: 'stuck', fn: () => mark('stuck') }, { i: '🙋', l: 'ask', fn: () => mark('ask') }]);
     $('.key[data-k="3"]').classList.remove('dark');
   },
   shelf() {
     view.innerHTML = `<div class="grid shelf"><div class="hd"><div class="hd-t">your <i>shelf</i></div><div class="osd sans" style="position:static">${S.tapes.length} tapes · ${S.collabs} collabs · ${Math.round(S.grindMin)} min grinding</div></div>` +
-      S.tapes.slice(0, 12).map(t => { const m = [...M, CY].find(x => x.id === t.who) || M[0]; return `<div class="tape"><div class="lb" style="background:${t.replay ? '#f4f2f5' : PAL[m.k][4]}">${t.replay ? 'c.y. live' : t.who + ' × you'}<small>${t.replay ? 'replay' : t.min + ' min'} · ${t.date}</small></div><div class="reels"><div class="reel"></div><div class="reel"></div></div></div>`; }).join('') + `</div>`;
+      S.tapes.slice(0, 12).map(t => { const m = [...M, CY].find(x => x.id === t.who) || M[0]; return `<div class="tape"><div class="lb" style="background:${t.replay ? '#f4f2f5' : PAL[m.k][4]}"><span class="lbf">${face(m, 34)}</span>${t.replay ? 'c.y. live' : t.who + ' × you'}<small>${t.replay ? 'replay' : t.min + ' min'} · ${t.date}</small></div><div class="reels"><div class="reel"></div><div class="reel"></div></div></div>`; }).join('') + `</div>`;
     keys([{ i: '🏠', l: 'lounge', fn: () => go('lounge') }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '✕', l: 'back', fn: () => go('lounge') }]);
+  },
+  skills({ q = '' } = {}) {
+    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const score = k => terms.reduce((a, t) => a + ((k.title + ' ' + k.tags.join(' ') + ' ' + k.steps.join(' ') + ' ' + k.by).toLowerCase().includes(t) ? 1 : 0), 0);
+    const list = (terms.length ? S.skills.filter(k => score(k) > 0).sort((a, b) => score(b) - score(a)) : [...S.skills].sort((a, b) => b.uses - a.uses));
+    R.skList = list; R.sel = Math.min(R.sel, Math.max(0, list.length - 1));
+    view.innerHTML = `<div class="skwrap"><div class="skhd"><div class="hd-t">skills <i>channel</i></div><div class="osd sans" style="position:static">${S.skills.length} playbooks · built from ${S.tapes.length + 41} chats</div></div>
+      <label class="skq"><span>🧠</span><input id="skq" placeholder="ask the network… (pricing, touring, investors)" value="${q.replace(/"/g, '')}" autocomplete="off"></label>
+      <div class="skgrid">${list.length ? list.map((k, i) => cart(k, i)).join('') : `<div class="empty">no playbook yet · match someone and turn skills rec on</div>`}</div></div>`;
+    const inp = $('#skq'); inp.addEventListener('input', () => { clearTimeout(R.qT); R.qT = setTimeout(() => { const v = inp.value; go('skills', { q: v }); const n = $('#skq'); n.focus(); n.setSelectionRange(v.length, v.length); }, 220); });
+    view.querySelectorAll('.cart').forEach(c => c.addEventListener('click', () => { SFX.key(); openSkill(c.dataset.by); }));
+    keys([{ i: '📥', l: 'installed', fn: () => { const ins = S.skills.filter(k => S.installed.includes(k.by)); toast(ins.length ? `your stack: ${ins.map(k => k.title).join(' · ')}` : 'nothing installed yet'); } }, { i: '🔍', l: 'search', fn: () => $('#skq').focus() }, { i: '🔴', l: 'skills rec', fn: toggleSkills, lit: R.skillsOn }, { i: '🏠', l: 'lounge', fn: () => go('lounge') }], 'learn');
+  },
+  skill({ by }) {
+    const k = S.skills.find(x => x.by === by) || { by, from: 'not captured yet', uses: 0, ...SKILL_OF[by] }, m = M.find(x => x.id === by), ins = S.installed.includes(by);
+    R.skBy = by;
+    view.innerHTML = `<div class="skdetail"><div class="skd-l"><div class="cart big" style="--c:${PAL[m.k][4]}"><div class="cart-lb">${face(m, 46)}<b>${k.title}</b></div><div class="cart-meta">${m.id} · ${k.from}</div><div class="cart-notch"></div></div>
+      <div class="skd-by">${face(m, 34)}<span>taught by <b>${m.id}</b> · ${m.co}</span></div><div class="skd-tags">${k.tags.map(t => `<span>${t}</span>`).join('')}</div><div class="skd-uses">${k.uses} founders installed</div></div>
+      <ol class="skd-steps">${k.steps.map(t => `<li>${t}</li>`).join('')}</ol></div>`;
+    keys([{ i: '💾', l: 'skill.md', fn: () => exportSkill(k, m) }, { i: ins ? '✅' : '📌', l: ins ? 'installed' : 'install', fn: () => { if (!S.installed.includes(by)) { S.installed.push(by); k.uses++; SFX.win(); flashText('INSTALLED'); toast(`${k.title} is in your stack`); go('skill', { by }); } }, lit: ins }, { i: '📞', l: 'learn live', fn: () => learnLive(m) }, { i: '⏹', l: 'back', fn: () => go('skills') }], 'learn');
   },
   cy() {
     if (!R.cyLive) {
@@ -292,6 +336,24 @@ const MODES = {
     R.auto = setInterval(() => react(['💗', '🔥', '✋', '💗'][Math.random() * 4 | 0], 1 + (Math.random() * 2 | 0)), 1400);
   },
 };
+function cart(k, i) { const m = M.find(x => x.id === k.by); return `<button class="cart" data-by="${k.by}" style="--c:${PAL[m.k][4]}"><div class="cart-lb">${face(m, 30)}<b>${k.title}</b></div><div class="cart-meta">${m.id} · ${k.steps.length} steps · ${k.uses} installs${S.installed.includes(k.by) ? ' · ✅' : ''}</div><div class="cart-notch"></div></button>`; }
+function openSkill(by) { go('skill', { by }); }
+function learnLive(m) { if (!m.grind) { toast(`${m.id} isn't grinding right now · we'll ping you`); return; } R.partner = m; toast(`calling ${m.id} to learn it live`); go('tuning', { who: m }); }
+function toggleSkills() { R.skillsOn = !R.skillsOn; $('#skillsSw').classList.toggle('on', R.skillsOn); SFX.clunk(); lcdFlash(R.skillsOn ? 'ON' : 'OF', 'skills', pad(S.skills.length), 'saved', R.skillsOn ? 'CHATS → PLAYBOOKS' : 'SKILLS REC OFF'); if (R.mode === 'skills') go('skills'); toast(R.skillsOn ? 'skills rec on · both people see it' : 'skills rec off · chats stay off the record'); }
+function captureSkill(p, mins) {
+  const ex = S.skills.find(k => k.by === p.id), t = SKILL_OF[p.id];
+  if (ex) { ex.uses++; ex.from = `tape ${pad(S.tapes.length)} · v${(ex.v = (ex.v || 1) + 1)}`; } else S.skills.unshift({ by: p.id, from: `tape ${pad(S.tapes.length)} · ${S.tapes[0].date}`, uses: 1, ...t });
+  view.insertAdjacentHTML('beforeend', `<div class="capture"><div class="cap-h"><span class="dotk"></span>skill captured from ${mins} min chat</div>${cart(S.skills.find(k => k.by === p.id), 0)}<div class="cap-s">${t.steps.length} steps · ${ex ? 'merged into v' + ex.v : 'new playbook'} · in the skills channel</div></div>`);
+  view.querySelector('.capture .cart').addEventListener('click', () => openSkill(p.id)); const bt = view.querySelector('.bigtape'); if (bt) bt.classList.add('shift');
+  SFX.win(); S.wire.push(`new skill · ${t.title}`); marquee(); strip();
+  if (KEYS[2]) { KEYS[2] = { i: '🧠', l: 'open skill', fn: () => openSkill(p.id), lit: true }; $('#k2i').textContent = '🧠'; $('#k2l').textContent = 'open skill'; $('.key[data-k="2"]').classList.add('lit'); }
+}
+function exportSkill(k, m) {
+  const slug = k.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+  const md = `---\nname: ${slug}\ndescription: ${k.title}. A founder playbook from the MNTv Live network, taught by ${m.id} (${m.co}).\n---\n\n# ${k.title}\n\nUse this when a founder or artist asks how to ${k.title}.\n\n## Steps\n\n${k.steps.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\n## Source\n\n- Taught by: ${m.id}, ${m.co}\n- Captured from: ${k.from}\n- Tags: ${k.tags.join(', ')}\n- Network: MNTv Live (Music Nerd), demo data\n`;
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' })); a.download = `${slug}.SKILL.md`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
+  SFX.win(); toast('SKILL.md downloaded · drop it into your AI assistant');
+}
 function passAux() { R.auxIdx++; toast(`aux passed to ${R.partner ? R.partner.id : 'them'} · new key`); SFX.static(.25); react('🎧', 2); }
 function raise() { S.hands++; toast(`you're in c.y.'s queue · #${S.hands - 6}`); react('✋', 3); }
 function helpAsk(m) {
@@ -302,7 +364,7 @@ function helpAsk(m) {
 function asks() {
   const ex = view.querySelector('.asklist'); if (ex) { ex.remove(); return; }
   const list = M.filter(m => m.drop), box = document.createElement('div'); box.className = 'asklist';
-  box.innerHTML = list.map(m => `<div class="ask"><div class="dot" style="background:${PAL[m.k][4]}">${m.id[0].toUpperCase()}</div><p>${m.drop.ask}<small>${m.id} · ${m.co}</small></p><button data-id="${m.id}" ${S.helped.includes(m.id) ? 'disabled' : ''}>${S.helped.includes(m.id) ? 'sent' : 'i got you'}</button></div>`).join('');
+  box.innerHTML = list.map(m => `<div class="ask">${face(m, 44)}<p>${m.drop.ask}<small>${m.id} · ${m.co}</small></p><button data-id="${m.id}" ${S.helped.includes(m.id) ? 'disabled' : ''}>${S.helped.includes(m.id) ? 'sent' : 'i got you'}</button></div>`).join('');
   view.appendChild(box);
   box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const id = b.dataset.id; if (S.helped.includes(id)) return; S.helped.push(id); S.saved++; SFX.win(); b.textContent = 'sent'; b.disabled = true; toast(`pinged ${id} · ${S.saved} calls c.y. didn't take`); }));
 }
@@ -324,6 +386,7 @@ function sendDrop() {
 }
 
 /* ---------------- on air (you) + incoming matches ---------------- */
+function setOnboard(n) { R.onboard = n; ['#kAir', '#kMatch', '#kAdlib'].forEach((id, i) => $(id).classList.toggle('halo', i === n)); }
 function setAir(on, quiet) {
   R.air = on; airKnob.set(on ? 1 : 0, true);
   $('#kAir').classList.toggle('live', on);
@@ -331,7 +394,7 @@ function setAir(on, quiet) {
   $('#statusEtch').textContent = on ? 'you are on air' : R.cyLive ? 'c.y. is live' : 'members only';
   SFX.onair(on);
   if (on) {
-    R.airStart = Date.now(); if (!R.timerRun) R.timerRun = true; bumpStreak();
+    R.airStart = Date.now(); if (!R.timerRun) R.timerRun = true; bumpStreak(); if (R.onboard === 0) setOnboard(1);
     flashText('ON AIR'); toast(`you're on air · ${TIMES[R.timerIdx]} min grind · matchable`);
     S.wire.push('you · on air, grinding'); marquee(); scheduleIncoming();
   } else {
@@ -341,15 +404,17 @@ function setAir(on, quiet) {
   strip(); lcdRender(); knobLabels();
   if (R.mode === 'lounge') go('lounge');
 }
+function showRing(p) { hideRing(); const d = document.createElement('div'); d.className = 'ringov'; d.id = 'ringOv'; d.innerHTML = `<div class="ringcard"><div class="ripple">${face(p, 168)}</div><div class="rc-n">${p.id}</div><div class="rc-s">${p.grind} · wants to match</div><div class="rc-h"><span class="dotk"></span>press match</div></div>`; crt.appendChild(d); }
+function hideRing() { const d = $('#ringOv'); if (d) d.remove(); }
 function scheduleIncoming() {
   clearTimeout(R.ringT);
   R.ringT = setTimeout(() => {
-    if (!R.air || !R.on || ['call', 'tuning', 'record'].includes(R.mode)) { scheduleIncoming(); return; }
-    const p = grinding()[Math.random() * grinding().length | 0]; R.incoming = p; SFX.ring();
+    if (!R.air || !R.on || !['lounge', 'guide', 'shelf'].includes(R.mode)) { scheduleIncoming(); return; }
+    const p = grinding()[Math.random() * grinding().length | 0]; R.incoming = p; SFX.ring(); showRing(p);
     $('#kMatch').classList.add('ringing'); $('#kMatch .knob-lab').textContent = 'pick up';
     toast(`${p.id} matched with you · press match to pick up`);
-    let n = 0; const rr = setInterval(() => { if (!R.incoming || ++n > 4) { clearInterval(rr); if (R.incoming) { R.incoming = null; $('#kMatch').classList.remove('ringing'); $('#kMatch .knob-lab').textContent = 'match'; toast(`missed ${p.id} · they'll ring again`); scheduleIncoming(); } return; } SFX.ring(); }, 1800);
-  }, 14000 + Math.random() * 10000);
+    let n = 0; const rr = setInterval(() => { if (!R.incoming || ++n > 4) { clearInterval(rr); if (R.incoming) { R.incoming = null; hideRing(); $('#kMatch').classList.remove('ringing'); $('#kMatch .knob-lab').textContent = 'match'; toast(`missed ${p.id}`); scheduleIncoming(); } return; } SFX.ring(); }, 1800);
+  }, (R.rang ? 16000 : 6000) + Math.random() * 8000); R.rang = true;
 }
 
 /* ---------------- knob engine ---------------- */
@@ -373,7 +438,7 @@ class Knob {
       const th = Math.min(this.step(), 28); while (Math.abs(d.acc) >= th) { const dir = Math.sign(d.acc); d.acc -= dir * th; this.turn(dir); } });
     const up = () => { if (!d) return; this.btn.classList.remove('pressed'); if (d.mv < 8 && Date.now() - d.t < 700) this.press(); d = null; };
     this.btn.addEventListener('pointerup', up); this.btn.addEventListener('pointercancel', up);
-    this.btn.addEventListener('click', () => { if (!R.on) powerOn(); });
+    this.btn.addEventListener('click', e => { if (e.detail) this.btn.blur(); if (!R.on) powerOn(); });
     this.btn.addEventListener('wheel', e => { if (!R.on) return; e.preventDefault(); this.turn(e.deltaY > 0 ? 1 : -1); }, { passive: false });
     this.btn.addEventListener('keydown', e => { if (!R.on) return; if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); this.turn(1); } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); this.turn(-1); } else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); this.press(); } });
   }
@@ -404,12 +469,14 @@ function knobLabels() {
   $('#kVol .kn-l').textContent = R.vol ? `vol ${R.vol}` : 'muted';
   $('#kAdlib .kn-l').textContent = `adlib: ${ADLIBS[R.adlib][0]}`;
 }
-function fireAdlib() { ADLIB_FX[R.adlib](); flashText(ADLIBS[R.adlib][1]); if (R.mode === 'call' && R.partner) setTimeout(() => react(['😂', '🔥', '🙌'][Math.random() * 3 | 0], 3), 400); }
+function fireAdlib() { if (R.onboard === 2) setOnboard(3); ADLIB_FX[R.adlib](); flashText(ADLIBS[R.adlib][1]); if (R.mode === 'call' && R.partner) setTimeout(() => react(['😂', '🔥', '🙌'][Math.random() * 3 | 0], 3), 400); }
 function matchPress() {
-  if (R.incoming) { const p = R.incoming; R.incoming = null; $('#kMatch').classList.remove('ringing'); R.partner = p; go('call'); scheduleIncoming(); return; }
+  if (R.incoming) { const p = R.incoming; R.incoming = null; hideRing(); $('#kMatch').classList.remove('ringing'); R.partner = p; go('call'); scheduleIncoming(); return; }
   if (R.mode === 'call' || R.mode === 'tuning') { go('after'); return; }
   if (R.mode === 'play') { nextDrop(false); return; }
-  if (R.mode === 'record') { toast('finish your drop first · press ⏺'); return; }
+  if (R.mode === 'skill') { learnLive(M.find(x => x.id === R.skBy)); return; }
+  if (R.mode === 'skills' && R.skList && R.skList[0]) { openSkill(R.skList[R.sel].by); return; }
+  if (R.mode === 'record') { toast('finish your drop first · press 🔴'); return; }
   go('tuning', {});
 }
 
@@ -420,7 +487,7 @@ document.querySelectorAll('.key').forEach(el => {
   const up = () => el.classList.remove('down'); el.addEventListener('pointerup', up); el.addEventListener('pointerleave', up);
   el.addEventListener('click', () => { el.blur(); if (!R.on) { powerOn(); return; } KEYS[i] && KEYS[i].fn(); });
 });
-function surf(dir) { const n = all().length; R.ch = (R.ch + dir + n) % n; staticBurst(200); SFX.tick(); go('lounge'); }
+function surf(dir) { const n = all().length; R.ch = (R.ch + dir + n) % n; staticBurst(200); SFX.tick(); go('lounge'); chFlash(pad(R.ch + 1)); }
 
 /* ---------------- vu ---------------- */
 const vu = $('#vu'); vu.innerHTML = '<span></span>'.repeat(24); const bars = [...vu.children], fbuf = new Uint8Array(32);
@@ -431,13 +498,14 @@ const po = $('#powerOff'), pw = $('#power');
 function powerOn() {
   if (R.on) return; R.on = true; audioInit(); SFX.power(true);
   pw.classList.add('on'); po.classList.add('hide'); crt.classList.remove('off-anim'); void crt.offsetWidth; crt.classList.add('on-anim'); setTimeout(() => crt.classList.remove('on-anim'), 800);
-  go('lounge');
+  go('lounge'); const sp = document.createElement('div'); sp.className = 'splash'; sp.innerHTML = '<img src="assets/specs.png" alt=""><b>mntv <i>live</i></b><span>members only · week 43</span>'; crt.appendChild(sp); setTimeout(() => sp.remove(), 1600); setTimeout(() => { if (R.onboard == null) setOnboard(0); }, 1700);
   if (!R.cyT) R.cyT = setTimeout(() => { R.cyLive = true; strip(); if (!R.air) $('#statusEtch').textContent = 'c.y. is live'; SFX.win(); toast('c.y. just went live · turn to ch 00'); S.wire.push('c.y. live now'); marquee(); }, 40000);
 }
 function powerOff() { R.on = false; SFX.power(false); clearModeTimers(); if (R.air) setAir(false, true); pw.classList.remove('on'); crt.classList.add('off-anim'); setTimeout(() => po.classList.remove('hide'), 420); if (A.ctx) A.ctx.suspend(); stopCam(); }
 pw.addEventListener('click', () => R.on ? powerOff() : powerOn());
+$('#skillsSw').addEventListener('click', () => { if (!R.on) { powerOn(); return; } toggleSkills(); });
 po.addEventListener('click', powerOn);
-$('#strip').addEventListener('click', e => { const b = e.target.closest('.ch'); if (!b) return; if (!R.on) { powerOn(); return; } const i = +b.dataset.ch; SFX.key(); staticBurst(220); if (i === 0) go('cy'); else { R.ch = i - 1; go('lounge'); } });
+$('#strip').addEventListener('click', e => { const b = e.target.closest('.ch'); if (!b) return; if (!R.on) { powerOn(); return; } const i = +b.dataset.ch; SFX.key(); staticBurst(220); if (b.dataset.ch === 'sk') { go('skills'); return; } if (i === 0) { go('cy'); chFlash('00'); } else { R.ch = i - 1; go('lounge'); chFlash(pad(i)); } });
 /* swipe the screen to surf */
 let sw = null;
 $('#screen').addEventListener('pointerdown', e => { if (R.on && R.mode === 'lounge') sw = e.clientX; });
@@ -448,6 +516,7 @@ document.addEventListener('keydown', e => {
   if (e.repeat || e.metaKey || e.ctrlKey) return;
   if (!R.on) { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); powerOn(); } return; }
   if (e.target.closest && e.target.closest('.knob')) return;
+  if (e.target.tagName === 'INPUT') { if (e.key === 'Escape') e.target.blur(); return; }
   const k = e.key.toLowerCase();
   if (k === 'arrowright') { if (R.mode === 'lounge') surf(1); else if (R.mode === 'play') nextDrop(false); }
   else if (k === 'arrowleft') { if (R.mode === 'lounge') surf(-1); }
@@ -455,7 +524,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'o') airKnob.press(); else if (k === 't') timerKnob.press(); else if (k === 'a') adlibKnob.press();
   else if (k === '=' || k === '+') volKnob.turn(1); else if (k === '-') volKnob.turn(-1);
   else if (k === '[') adlibKnob.turn(-1); else if (k === ']') adlibKnob.turn(1);
-  else if (k === 'g') go('guide'); else if (k === 'r') go('record'); else if (k === 's') go('shelf'); else if (k === 'l') go('lounge'); else if (k === '0') go('cy');
+  else if (k === 'k') go('skills'); else if (k === 'g') go('guide'); else if (k === 'r') go('record'); else if (k === 's') go('shelf'); else if (k === 'l') go('lounge'); else if (k === '0') go('cy');
   else if ('1234'.includes(k)) { const el = $(`.key[data-k="${+k - 1}"]`); el.classList.add('down'); el.classList.contains('dark') ? SFX.dark() : SFX.key(); setTimeout(() => el.classList.remove('down'), 110); KEYS[+k - 1]?.fn(); }
 });
 
