@@ -632,7 +632,7 @@ kbd{font:800 10px Inter,sans-serif;letter-spacing:.04em;min-width:20px;padding:3
   box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -2px 6px rgba(0,0,0,.7);
   font:900 26px/1 Inter,system-ui,sans-serif;letter-spacing:-.045em;white-space:nowrap;
   color:#ffd6f3;text-shadow:0 0 1px #fff,0 0 10px rgba(255,117,216,.55),0 0 22px rgba(255,117,216,.35)}
-.np-t b{font-weight:900;color:#19ffb8;margin-left:1px;text-shadow:0 0 1px #eafff8,0 0 10px rgba(25,255,184,.7),0 0 24px rgba(25,255,184,.4)}
+.np-t b{font-weight:900;color:#19ffb8;margin-left:0;text-shadow:0 0 1px #eafff8,0 0 10px rgba(25,255,184,.7),0 0 24px rgba(25,255,184,.4)}
 .np-sheen{position:absolute;inset:0;border-radius:14px;pointer-events:none;
   background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 48%,rgba(255,255,255,.05) 55%,transparent 65%);
   background-size:250% 100%;background-position:140% 0;animation:npSheen 7s ease-in-out infinite}
