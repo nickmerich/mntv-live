@@ -644,3 +644,7 @@ kbd{font:800 10px Inter,sans-serif;letter-spacing:.04em;min-width:20px;padding:3
 @media (prefers-reduced-motion:reduce){.np-sheen{animation:none}}
 .pocket .top{gap:7px}.pocket .top .lamp{padding:0 10px}.pocket .top .swgroup{margin-left:4px}.pocket .specs{width:40px;height:40px}
 .pocket .splash b{font-size:46px}
+.boot-c{margin-top:22px;font-size:12px;line-height:1.6;letter-spacing:.06em;color:#a08d9a;text-align:center}
+.proto{white-space:nowrap}.proto .ps{display:none}
+.pocket .proto .pl{display:none}.pocket .proto .ps{display:inline}
+.pocket .boot-c{font-size:11px;margin-top:16px}
