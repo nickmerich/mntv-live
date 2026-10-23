@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MNTv Live · prototype</title>
+<meta name="description" content="MNTv Live prototype: a members-only hardware-style TV for C.Y. Lee's portfolio. Weekly drops, spins, tapes and the portfolio wire.">
+<link rel="icon" href="assets/specs.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="room" id="room">
+  <div class="floor-shadow" id="floorShadow"></div>
+  <div class="device" id="device" aria-label="MNTv Live device">
+    <div class="shell">
+      <div class="grain"></div>
+      <div class="seam"></div>
+      <div class="sheen" id="sheen"></div>
+      <span class="screw s1"></span><span class="screw s2"></span><span class="screw s3"></span><span class="screw s4"></span>
+
+      <header class="top">
+        <img class="specs" src="assets/specs.png" alt="Music Nerd specs logo">
+        <div class="etch model">mntv live · model 01</div>
+        <div class="lamp" id="lamp"><span class="lamp-glass"></span><span class="lamp-txt" id="lampTxt">on air</span></div>
+        <div class="etch status" id="statusEtch">members only</div>
+        <button class="power" id="power" aria-label="Power"><span class="power-lever"></span></button>
+      </header>
+
+      <section class="well screen-well">
+        <div class="screen" id="screen">
+          <div class="crt" id="crt">
+            <div class="view" id="view"></div>
+            <div class="static-ov" id="staticOv"></div>
+            <div class="fx-reacts" id="reacts"></div>
+          </div>
+          <div class="scan"></div><div class="mask"></div><div class="vignette"></div>
+          <div class="glass" id="glass"></div>
+          <div class="poweroff" id="powerOff">
+            <div class="boot">
+              <img src="assets/specs.png" alt="">
+              <div class="boot-t">mntv <b>live</b></div>
+              <div class="boot-s">press power or tap to turn on</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <nav class="strip well" id="strip" aria-label="Channels"></nav>
+
+      <aside class="panel">
+        <div class="lcd well" id="lcd">
+          <div class="lcd-cell"><div class="seg ghost">88</div><div class="seg" id="lcdA">00</div><div class="lcd-l" id="lcdAl">live now</div></div>
+          <div class="lcd-mid" id="lcdMid"></div>
+          <div class="lcd-cell r"><div class="seg ghost p">88</div><div class="seg p" id="lcdB">00</div><div class="lcd-l p" id="lcdBl">day streak</div></div>
+        </div>
+
+        <div class="controls">
+          <button class="key" data-k="0"><span class="cap"><span class="ico" id="k0i"></span></span><span class="led"></span><span class="legend" id="k0l"></span></button>
+          <button class="key" data-k="1"><span class="cap"><span class="ico" id="k1i"></span></span><span class="led"></span><span class="legend" id="k1l"></span></button>
+          <div class="knob-wrap">
+            <div class="knob-ticks"></div>
+            <button class="knob" id="knob" aria-label="Knob: turn to change channel, press for action">
+              <span class="knurl"></span><span class="cap-metal"></span>
+              <span class="ind" id="knobInd"></span>
+              <span class="knob-lab" id="knobLab">spin</span>
+            </button>
+            <div class="etch knob-hint">turn · press</div>
+          </div>
+          <button class="key" data-k="2"><span class="cap"><span class="ico" id="k2i"></span></span><span class="led"></span><span class="legend" id="k2l"></span></button>
+          <button class="key dark" data-k="3"><span class="cap"><span class="ico" id="k3i"></span></span><span class="led"></span><span class="legend" id="k3l"></span></button>
+        </div>
+
+        <div class="row2">
+          <div class="grille" aria-hidden="true"></div>
+          <div class="fader well" id="fader" aria-label="aux volume"><span class="slot"></span><span class="fill" id="faderFill"></span><span class="fcap" id="faderCap"></span></div>
+          <div class="vu well" id="vu"></div>
+        </div>
+        <div class="row2-l etch"><span>speaker</span><span>aux</span><span>vol</span></div>
+      </aside>
+
+      <footer class="marq well" id="marq"><div class="marq-run" id="marqRun"></div><div class="dots"></div></footer>
+      <img class="plate" src="assets/wordmark.png" alt="Music Nerd">
+      <div class="etch proto">prototype · demo data</div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="hint etch-dark" id="hint">← → surf · space spin · r record · g guide · 1-4 keys</div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
