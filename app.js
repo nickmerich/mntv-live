@@ -30,10 +30,8 @@ const PROMPTS = ['make something in 30 days?', 'what are you stuck on?', 'best s
 const WIRE0 = ['sound of fractures · alone together on bbc radio', 'black dave · new yards episode', 'maya × theo · collab', 'c.y. on air · this week', 'week 43 drops are in'];
 
 /* ---------------- state ---------------- */
-const store = {
-  get() { try { return JSON.parse(localStorage.getItem('mntv-live') || '{}'); } catch { return {}; } },
-  set(v) { try { localStorage.setItem('mntv-live', JSON.stringify(v)); } catch {} },
-};
+let mem = {};
+const store = { get() { return mem; }, set(v) { mem = v; } }; // in-memory for the prototype
 const saved = store.get();
 const S = Object.assign({
   tapes: [{ who: 'jules', date: 'oct 21', min: 12 }, { who: 'ren', date: 'oct 20', min: 9 }, { who: 'kai', date: 'oct 18', min: 12 }, { who: 'c.y.', date: 'oct 16', min: 60, replay: true }],
