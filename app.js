@@ -42,7 +42,7 @@ const SKILL_OF = {
 const CY = { id: 'c.y.', role: 'executive producer', co: 'music nerd', k: 'r' };
 const YOU = { id: 'you', role: 'you', co: 'your channel', k: 'y' };
 const PROMPTS = ['what are you grinding on?', 'what is the one blocker today?', 'trade one skill, right now', 'make something in 30 days?', 'who should the other meet?', 'ship it by friday?'];
-const WIRE0 = ['sound of fractures · alone together on bbc radio', 'black dave · new yards episode', 'maya × theo · collab', 'week 43 drops are in', '8 founders grinding right now'];
+const WIRE0 = ['sound of fractures · alone together on bbc radio', 'black dave · new yards episode', 'maya × theo · collab', 'week 43 drops are in', 'founders grinding right now'];
 const FILTERS = [['founders', 'founder'], ['artists', 'artist'], ['tech', 'tech'], ['anyone', null]];
 const TIMES = [5, 10, 15, 25, 45, 60];
 const ADLIBS = [['yeah', 'YEAH!'], ['let’s go', 'LET’S GO!'], ['horn', '📯 HORN'], ['rewind', '⏪ REWIND'], ['scratch', 'SCRATCH'], ['boom', 'BOOM']];
@@ -61,7 +61,7 @@ const mmss = s => `${pad(s / 60)}:${pad(s % 60)}`;
 const all = () => [...M, YOU];
 const grinding = () => M.filter(m => m.grind);
 const droppedCount = () => M.filter(m => m.drop).length + (S.dropped ? 1 : 0);
-function bumpStreak() { const t = today(); if (S.lastDay === t) return; S.lastDay = t; S.streak++; toast(`day ${S.streak} 🔥 streak alive`); }
+function bumpStreak() { const t = today(); if (S.lastDay === t) return; S.lastDay = t; S.streak++; toast(`🔥 day ${S.streak}`); }
 
 /* ---------------- audio ---------------- */
 const A = { ctx: null };
@@ -170,7 +170,7 @@ function lcdRender() {
   const s = R.timerLeft;
   $('#lcdA').textContent = pad(s / 60); $('#lcdB').textContent = pad(s % 60);
   $('#lcdAl').textContent = R.timerRun ? 'min left' : 'min set'; $('#lcdBl').textContent = 'sec';
-  $('#lcdMid').textContent = R.mode === 'skills' || R.mode === 'skill' ? `${S.skills.length} SKILLS` : R.mode === 'call' && R.partner ? `W/ ${R.partner.id.toUpperCase()}` : R.air ? (R.timerRun ? 'ON AIR · GRINDING' : 'ON AIR · PAUSED') : R.timerRun ? 'TIMER RUNNING' : `${grinding().length} GRINDING`;
+  $('#lcdMid').textContent = R.mode === 'skills' || R.mode === 'skill' ? `${S.skills.length} playbooks` : R.mode === 'call' && R.partner ? `with ${R.partner.id}` : R.air ? (R.timerRun ? 'on air' : 'on air · paused') : R.timerRun ? 'timer running' : `${grinding().length} grinding now`;
 }
 function lcdFlash(a, al, b, bl, mid) { lcdTemp = { a, al, b, bl, mid }; lcdRender(); clearTimeout(lcdTempT); lcdTempT = setTimeout(() => { lcdTemp = null; lcdRender(); }, 1300); }
 setInterval(() => {
@@ -185,14 +185,47 @@ function timerDone() {
   R.timerRun = false; R.timerLeft = TIMES[R.timerIdx] * 60; SFX.alarm(); flashText('TIME!');
   if (R.mode === 'call') go('after');
   if (R.air) setAir(false, true);
-  toast(`session done · ${Math.max(1, Math.round(S.grindMin))} min grind logged`);
+  toast(`session done · ${Math.max(1, Math.round(S.grindMin))} min logged`);
 }
+
+/* ---------------- icons (engraved keycap legends) ---------------- */
+const IC = {
+  flame: '<path d="M12 2c.7 3.6 6 5.8 6 11.3A6 6 0 0 1 6 13.3c0-3 1.5-4.8 3-6 .1 2.4 1.1 3.8 2.6 4.1-.5-3.9-.6-6.6.4-9.4z"/><path d="M12 21a2.6 2.6 0 0 1-2.6-2.6c0-1.6 1.4-2.4 2.6-3.9 1.2 1.5 2.6 2.3 2.6 3.9A2.6 2.6 0 0 1 12 21z"/>',
+  tv: '<rect x="2.5" y="7" width="19" height="13.5" rx="3"/><path d="M8 2.8l4 4 4-4"/>',
+  tape: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><circle cx="8" cy="11.5" r="2.2"/><circle cx="16" cy="11.5" r="2.2"/><path d="M7 19l1.5-3h7L17 19"/>',
+  spark: '<path d="M11 3l1.9 5.4L18.3 10l-5.4 1.9L11 17.3l-1.9-5.4L3.7 10l5.4-1.6z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  phones: '<path d="M3.5 15v-3a8.5 8.5 0 0 1 17 0v3"/><rect x="3" y="14" width="4.5" height="7" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="7" rx="1.6"/>',
+  x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  collab: '<circle cx="9" cy="12" r="5.2"/><circle cx="15" cy="12" r="5.2"/>',
+  hand: '<path d="M7.5 12V6.2a1.5 1.5 0 0 1 3 0V11m0-.8V4.6a1.5 1.5 0 0 1 3 0V11m0-4.8a1.5 1.5 0 0 1 3 0V12m0-2.6a1.5 1.5 0 0 1 3 0v4.4a7.2 7.2 0 0 1-7.2 7.2h-.6a7 7 0 0 1-5.9-3.2L4 15a1.6 1.6 0 0 1 2.6-1.8l.9 1.2"/>',
+  seal: '<circle cx="12" cy="9" r="5.8"/><path d="M8.6 13.7L7.2 21.5l4.8-2.6 4.8 2.6-1.4-7.8"/>',
+  cal: '<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 2.8v4M16 2.8v4"/><path d="M8.5 15l2.2 2.2 4.8-4.4"/>',
+  home: '<path d="M3.5 11L12 4l8.5 7v8.5a1 1 0 0 1-1 1H15v-6H9v6H4.5a1 1 0 0 1-1-1z"/>',
+  play: '<path d="M7.5 4.8l12 7.2-12 7.2z" class="fill"/>',
+  rec: '<circle cx="12" cy="12" r="6.6" class="fill rec"/>',
+  stop: '<rect x="6.5" y="6.5" width="11" height="11" rx="2" class="fill"/>',
+  next: '<path d="M5 5l9.5 7L5 19z" class="fill"/><path d="M18.5 5v14"/>',
+  trophy: '<path d="M8 3.5h8v5.5a4 4 0 0 1-8 0zM8 5.5H4.5A3.2 3.2 0 0 0 8 9.6M16 5.5h3.5A3.2 3.2 0 0 1 16 9.6M12 13v4M8.5 21h7M10 17h4"/>',
+  wall: '<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 12h18M9.5 5v7M14.5 12v7"/>',
+  ask: '<circle cx="12" cy="12" r="9"/><path d="M9.4 9.3a2.7 2.7 0 1 1 3.8 2.5c-.7.3-1.2 1-1.2 1.8v.4M12 17.2h.01"/>',
+  down: '<path d="M12 3.5v11.5M7 10.5l5 5 5-5M4.5 20h15"/>',
+  pin: '<path d="M12 16.5V21.5M8.2 3h7.6l-1 6.2 3 2.8v2.2H6.2V12l3-2.8z"/>',
+  check: '<path d="M5 12.5l4.6 4.6L19 7.5"/>',
+  phone: '<path d="M5.2 3h3.9l1.9 4.8-2.4 1.5a10.6 10.6 0 0 0 6.1 6.1l1.5-2.4 4.8 1.9v3.9a2 2 0 0 1-2.2 2A16.4 16.4 0 0 1 3.2 5.2 2 2 0 0 1 5.2 3z"/>',
+  stack: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5M3 17l9 5 9-5"/>',
+  bell: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.8 1.8H4.2zM10 21h4"/>',
+  back: '<path d="M10.5 5.5L4 12l6.5 6.5M4.5 12H20"/>',
+  mark: '<path d="M6.5 3.5h11v17.5l-5.5-3.8-5.5 3.8z"/>',
+};
+const EMO = { '🔥': 'flame', '📺': 'tv', '📼': 'tape', '🧠': 'spark', '🎧': 'phones', '✕': 'x', '🤝': 'collab', '👋': 'hand', '🙋': 'hand', '✋': 'hand', '🏅': 'seal', '📅': 'cal', '🏠': 'home', '▶️': 'play', '🔴': 'rec', '⏹': 'stop', '⏭': 'next', '🏆': 'trophy', '🧱': 'wall', '❓': 'ask', '💾': 'down', '📌': 'pin', '✅': 'check', '📞': 'phone', '📥': 'stack', '🔔': 'bell', '↩': 'back', '🔖': 'mark' };
+const icon = n => n && IC[EMO[n] || n] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[EMO[n] || n]}</svg>` : '';
+const BLANK = { i: '', l: '', fn: null };
 
 /* ---------------- keys ---------------- */
 let KEYS = [];
 function keys(arr, matchLabel = 'match') {
   KEYS = arr; $('.key[data-k="3"]').classList.add('dark');
-  arr.forEach((k, i) => { $(`#k${i}i`).textContent = k.i; $(`#k${i}l`).textContent = k.l; const el = $(`.key[data-k="${i}"]`); el.classList.toggle('lit', !!k.lit); el.setAttribute('aria-label', k.l); });
+  arr.forEach((k, i) => { $(`#k${i}i`).innerHTML = icon(k.i); $(`#k${i}l`).textContent = k.l; const el = $(`.key[data-k="${i}"]`); el.classList.toggle('lit', !!k.lit); el.classList.toggle('blank', !k.fn); el.disabled = !k.fn; el.setAttribute('aria-label', k.l || 'unused'); });
   $('#kMatch .knob-lab').textContent = matchLabel;
 }
 function marquee() { const items = [...S.wire.slice(-4).reverse(), ...WIRE0]; const html = items.map(t => `<span>${t}</span>`).join(''); $('#marqRun').innerHTML = html + html; }
@@ -204,7 +237,9 @@ function strip() {
     return `<button class="ch ${on ? 'on' : ''}" data-ch="${i}"><span class="sw ${live ? '' : 'off noise'}" style="${live ? (photo(m) ? `background:url(${photo(m)}) center/cover` : `background:linear-gradient(160deg,${p[0]},${p[2]})`) : ''}"></span><span class="n">${m.n}</span>${m.id}${live ? '<span class="live"></span>' : ''}</button>`;
   }).join('');
   const on = $('#strip .ch.on'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+  stripFade();
 }
+function stripFade() { const el = $('#strip'); el.classList.toggle('end', el.scrollLeft + el.clientWidth >= el.scrollWidth - 4); }
 const curChan = () => all()[(R.ch + all().length) % all().length];
 
 /* ---------------- modes ---------------- */
@@ -217,21 +252,21 @@ const MODES = {
       `<div class="osd" style="left:30px;top:26px;font-size:30px">CH ${pad(R.ch + 1)}</div>` +
       (live ? (isYou ? l3(YOU, R.air ? 'on air · matchable' : 'off air · turn on air to get matched', R.air ? mmss(R.timerLeft) : '', R.air ? 'LIVE' : 'YOU') : l3(m, `🏅 ${(NERD[m.id] || [0])[0]} · ${m.co} · ${m.grind}`, mmss(m.gl)))
         : `<div class="l3 off"><span class="live-tag off">OFF</span><b>${m.id}</b><span class="l3s">not grinding right now</span></div>`) +
-      st(`🔥 ${S.streak}`, '', 'right:30px;top:26px;font-size:24px', -6) + st(`${grinding().length + (R.air ? 1 : 0)} grinding`, 'm', 'right:44px;top:84px', 4) +
+      st(`🔥 ${S.streak} day streak`, '', 'right:30px;top:26px;font-size:20px', -5) +
       (live && !isYou && SKILL_OF[m.id] ? `<button class="skchip" data-sk="${m.id}">🧠 ${SKILL_OF[m.id].title}</button>` : '');
     const sc = view.querySelector('.skchip'); if (sc) sc.addEventListener('click', () => { SFX.key(); openSkill(sc.dataset.sk); });
     if (isYou) getCam().then(c => { if (c && R.mode === 'lounge' && curChan() === YOU) { view.querySelector('.feed').outerHTML = feed(YOU, { cam: true }); attachCam(); } });
-    keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '🧠', l: 'skills', fn: () => go('skills') }, { i: '📼', l: 'shelf', fn: () => go('shelf') }]);
+    keys([{ i: '📺', l: 'guide', fn: () => go('guide') }, { i: '🧠', l: 'skills', fn: () => go('skills') }, { i: '📼', l: 'shelf', fn: () => go('shelf') }, BLANK]);
     R.auto = setInterval(() => { if (live && Math.random() < .5) react(['🔥', '💗', '🎧', '😂'][Math.random() * 4 | 0]); }, 2600);
   },
   tuning({ who }) {
     const [label, role] = FILTERS[R.filter];
     let pool = grinding().filter(m => !role || m.role === role).filter(m => !R.partner || m.id !== R.partner.id || grinding().length < 2);
-    if (!pool.length && !who) { toast(`nobody in ${label} is grinding right now · turn match to anyone`); go('lounge'); return; }
+    if (!pool.length && !who) { toast(`no ${label} grinding right now · turn match to anyone`); go('lounge'); return; }
     const p = who || pool[Math.random() * pool.length | 0];
     view.innerHTML = `<div class="feed noise"></div><div class="slotwin"><div class="slot" id="slot">${[...pool, ...pool, ...pool].slice(0, 12).map(m => face(m, 120)).join('')}</div></div><div class="osd sans" style="left:50%;bottom:40px;transform:translateX(-50%);font-size:18px;white-space:nowrap">matching · ${label}</div>`;
     SFX.static(1.2); let k = 0; const slot = $('#slot'); R.modeT = setInterval(() => { SFX.tick(); if (slot) slot.style.transform = `translateX(${-k * 136}px)`; if (++k > 8) { clearInterval(R.modeT); R.partner = p; if (slot) { slot.innerHTML = face(p, 120); slot.style.transition = 'none'; slot.style.transform = 'none'; slot.classList.add('hit'); } SFX.win(); R.modeT = setTimeout(() => go('call'), 700); } }, 140);
-    keys([{ i: '🔥', l: 'fire', fn() {} }, { i: '💗', l: 'love', fn() {} }, { i: '🎧', l: 'pass aux', fn() {} }, { i: '✕', l: 'cancel', fn: () => go('lounge') }], 'end');
+    keys([BLANK, BLANK, BLANK, { i: '✕', l: 'cancel', fn: () => go('lounge') }], 'end');
     getCam();
   },
   call() {
@@ -244,7 +279,7 @@ const MODES = {
       st(PROMPTS[Math.random() * PROMPTS.length | 0], 'w', 'left:50%;top:28px;transform:translateX(-50%);font-size:26px;padding:12px 24px');
     attachCam(); getCam().then(() => { if (R.mode === 'call') { const pf = view.querySelector('.pip .feed'); if (pf && R.cam && !pf.querySelector('video')) { pf.outerHTML = feed(YOU, { cam: true }); attachCam(); } } });
     if (R.onboard === 1) setOnboard(2);
-    keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '💗', l: 'love', fn: () => react('💗', 3) }, { i: '🎧', l: 'pass aux', fn: passAux }, { i: '✕', l: 'end', fn: () => go('after') }], 'end');
+    keys([{ i: '🔥', l: 'react', fn: () => react('🔥', 3) }, { i: '🔖', l: 'mark it', fn: markMoment }, { i: '🎧', l: 'pass aux', fn: passAux }, { i: '✕', l: 'end', fn: () => go('after') }], 'end');
     R.auto = setInterval(() => { const r = Math.random(); if (r < .45) react(['😂', '🔥', '💗', '🎧'][Math.random() * 4 | 0]); else if (r < .52) { const a = Math.random() * ADLIBS.length | 0; ADLIB_FX[a](); flashText(ADLIBS[a][1]); R.sess.adThem++; } }, 2600);
   },
   after() {
@@ -263,6 +298,7 @@ const MODES = {
       { who: p.id, t: sk ? `send you their playbook: ${sk.title}` : `share notes on ${p.grind}`, due: 'thu', done: false },
       { who: 'both', t: 'rematch in 3 days to check progress', due: 'mon', done: false },
     ];
+    if (ss.marks) R.items.splice(2, 0, { who: 'you', t: `review the ${ss.marks} moment${ss.marks > 1 ? 's' : ''} you marked`, due: 'today', done: false });
     view.innerHTML = `<div class="report">
       <section class="rp-card rp-sess">
         <div class="rp-hd">${face(p, 44)}<div><b>${p.id} × you</b><small>session ${pad(n)} · tape ${pad(n)} · ${date}</small></div></div>
@@ -279,16 +315,16 @@ const MODES = {
       <section class="rp-card rp-rate">
         <div class="rp-k">rate this session</div>
         <div class="stars" id="stars">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" aria-label="${i} stars">★</button>`).join('')}</div>
-        <div class="rp-hint" id="rateHint">turn match to rate · press to lock</div>
-        <div class="rp-tags">${['learned something', 'fun', 'intro made', 'would rematch', 'too short'].map(t => `<button data-t="${t}">${t}</button>`).join('')}</div>
+        <div class="rp-hint" id="rateHint">turn match · press to lock</div>
+        <div class="rp-tags">${['learned something', 'intro made', 'would rematch'].map(t => `<button data-t="${t}">${t}</button>`).join('')}</div>
         <div class="rp-data" id="rateData">${p.id}: ${nerdAvg.toFixed(1)} avg · ${nerdN} nerd endorsements in ${topic}</div>
       </section>
       <section class="rp-card rp-next">
-        <div class="rp-k">next moves <small>auto-drafted · tap when done</small></div>
+        <div class="rp-k">next moves <small>drafted from the call</small></div>
         <div id="items">${R.items.map((it, i) => `<button class="item" data-i="${i}"><span class="box"></span><span class="it-t">${it.t}</span><span class="it-m">${it.who === 'you' ? face(YOU, 20) : it.who === 'both' ? '👥' : face(p, 20)} ${it.due}</span></button>`).join('')}</div>
         <div class="rp-kept">promises kept <b id="keptPct">${Math.round(S.kept[0] / S.kept[1] * 100)}%</b> · last 30 days</div>
       </section>
-      <section class="rp-pon" id="pon"><div class="pon-l"><span class="pon-badge">PROOF OF NERD</span><span>endorse ${p.id} for <b>${topic}</b>. both of you sign it and it shows up on their channel and in matching.</span></div><button class="pon-btn" id="ponBtn">🏅 endorse ${p.id}</button></section>
+      <section class="rp-pon" id="pon"><div class="pon-l"><span class="pon-badge">PROOF OF NERD</span><span>vouch for ${p.id} in <b>${topic}</b>. you both sign, it lands on their channel and ranks them higher in matching.</span></div><span class="pon-key" id="ponBtn"><span class="kcap">${icon('seal')}</span>press endorse</span></section>
     </div>`;
     SFX.win(); flashText('SESSION SAVED');
     view.querySelectorAll('#stars button').forEach(b => { b.addEventListener('mouseenter', () => !R.rateLocked && paintStars(+b.dataset.v)); b.addEventListener('click', () => { R.rate = +b.dataset.v; lockRate(); }); });
@@ -296,8 +332,8 @@ const MODES = {
     view.querySelectorAll('.rp-tags button').forEach(b => b.addEventListener('click', () => { SFX.key(); b.classList.toggle('on'); R.tags[b.classList.contains('on') ? 'add' : 'delete'](b.dataset.t); }));
     view.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => toggleItem(+b.dataset.i)));
     const rs = view.querySelector('.rp-skill'); if (rs) rs.addEventListener('click', () => openSkill(rs.dataset.by));
-    $('#ponBtn').addEventListener('click', () => endorse(p, topic));
-    keys([{ i: '🏅', l: 'endorse', fn: () => endorse(p, topic) }, { i: '📅', l: 'follow-up', fn: () => followUp(p) }, { i: '🤝', l: 'collab', fn: collab }, { i: '🏠', l: 'done', fn: () => go('lounge') }], 'rate');
+    
+    keys([{ i: '🏅', l: 'endorse', fn: () => endorse(p, topic) }, { i: '📅', l: 'rematch', fn: () => followUp(p) }, { i: '🤝', l: 'collab', fn: collab }, { i: '🏠', l: 'done', fn: () => go('lounge') }], 'rate');
     function collab() {
       if (KEYS[2].lit) return; KEYS[2].lit = true; $('.key[data-k="2"]').classList.add('lit'); toast(`collab sent to ${p.id}`);
       setTimeout(() => { S.wire.push(`${p.id} × you · collab`); S.collabs++; marquee(); SFX.win(); toast(`${p.id} tapped collab too · you're on the wire`); react('🤝', 4); }, 1700);
@@ -311,13 +347,13 @@ const MODES = {
           (d ? `<div class="len">${fmt(m === YOU ? (R.myDrop ? R.myDrop.len : 60) : m.drop.len)}</div><div class="tag" style="color:${m.id === 'kai' ? 'var(--pink)' : 'var(--mint)'}">${m.id === 'kai' ? 'PICK' : 'NEW'}</div>` : `<div class="tag" style="color:#ff3b5c">OFF AIR</div>`) +
           `<div class="co">${m.co}</div><div class="nm">${m.id}</div></div>`; }).join('') + `</div>`;
     view.querySelectorAll('.tile').forEach(t => t.addEventListener('click', () => { R.sel = +t.dataset.i; SFX.key(); go('play', {}); }));
-    keys([{ i: '▶️', l: 'play all', fn: () => { R.sel = 0; go('play', { auto: true }); } }, { i: '🙋', l: 'asks', fn: asks }, { i: '🔴', l: 'record', fn: () => go('record'), lit: !S.dropped }, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]);
+    keys([{ i: '▶️', l: 'play all', fn: () => { R.sel = 0; go('play', { auto: true }); } }, { i: '🙋', l: 'open asks', fn: asks }, { i: '🔴', l: S.dropped ? 'redo drop' : 'your drop', fn: () => go('record'), lit: !S.dropped }, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]);
   },
   play({ auto }) {
     const list = all(), m = list[R.sel], isYou = m === YOU;
     if ((isYou && !S.dropped) || (!isYou && !m.drop)) {
       view.innerHTML = feed(m, { off: true }) + `<div class="bigname" style="left:30px;bottom:74px;font-size:96px">${m.id}</div>` + st('no drop this week', 'r', 'right:34px;top:30px', -4) + `<div class="osd sans" style="left:34px;bottom:40px;color:#ff3b5c">off air · due friday</div>`;
-      keys([{ i: '👋', l: 'nudge', fn: () => toast(isYou ? 'press record on the guide' : `nudged ${m.id} · due friday`) }, { i: '⏭', l: 'next', fn: () => nextDrop(auto) }, { i: '🔴', l: 'record', fn: () => go('record') }, { i: '⏹', l: 'back', fn: () => go('guide') }]);
+      keys([isYou ? { i: '🔴', l: 'your drop', fn: () => go('record') } : { i: '🔔', l: 'nudge', fn: () => toast(`nudged ${m.id} · due friday`) }, { i: '⏭', l: 'next', fn: () => nextDrop(auto) }, BLANK, { i: '↩', l: 'guide', fn: () => go('guide') }]);
       if (auto) R.modeT = setTimeout(() => nextDrop(true), 1800); return;
     }
     const d = isYou ? R.myDrop : m.drop, steps = [['win', d.win, 'var(--mint)'], ['stuck', d.stuck, 'var(--cyan)'], ['ask', d.ask, 'var(--pink)']];
@@ -325,7 +361,7 @@ const MODES = {
       `<div class="osd" style="left:30px;top:26px;font-size:30px">DROP</div><div class="osd sans" style="left:34px;top:70px">${m.id} · ${m.co} · wk 43</div>` + (m.id === 'kai' ? st("c.y.'s pick", '', 'right:34px;top:30px', -5) : '') + `<div class="caption" id="cap"></div>`;
     let i = 0, el = 0;
     const show = () => { const [k, t, c] = steps[i]; $('#cap').innerHTML = `<b style="color:${c}">${k}</b>${t}`; R.playStep = i; $('.key[data-k="2"]').classList.toggle('lit', i === 2); };
-    keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '💗', l: 'love', fn: () => react('💗', 3) }, { i: '🙋', l: 'i got you', fn: () => helpAsk(m) }, { i: '⏹', l: 'back', fn: () => go('guide') }], 'next');
+    keys([{ i: '🙋', l: 'i got you', fn: () => helpAsk(m) }, { i: '⏭', l: 'next', fn: () => nextDrop(auto) }, { i: '🔥', l: 'react', fn: () => react('🔥', 3) }, { i: '↩', l: 'guide', fn: () => go('guide') }], 'next');
     show(); R.modeT = setInterval(() => { el++; if (el % 4 === 0 && i < 2) { i++; show(); } if (auto && el >= 12) nextDrop(true); }, 1000);
   },
   record() {
@@ -340,13 +376,13 @@ const MODES = {
     };
     R.recRender = render; render(); getCam().then(() => { if (R.mode === 'record') render(); });
     const mark = c => { R.chipsLit[c] = true; view.querySelectorAll('.chip').forEach((el, i) => el.classList.toggle('lit', !!R.chipsLit[['win', 'stuck', 'ask'][i]])); };
-    keys([{ i: '🔴', l: 'rec / send', fn: () => R.recOn ? sendDrop() : startRec(), lit: true }, { i: '🏆', l: 'win', fn: () => mark('win') }, { i: '🧱', l: 'stuck', fn: () => mark('stuck') }, { i: '🙋', l: 'ask', fn: () => mark('ask') }]);
+    keys([{ i: R.recOn ? '⏹' : '🔴', l: R.recOn ? 'send' : 'record', fn: () => R.recOn ? sendDrop() : startRec(), lit: true }, { i: '🏆', l: 'win', fn: () => mark('win') }, { i: '🧱', l: 'stuck', fn: () => mark('stuck') }, { i: '❓', l: 'ask', fn: () => mark('ask') }]);
     $('.key[data-k="3"]').classList.remove('dark');
   },
   shelf() {
     view.innerHTML = `<div class="grid shelf"><div class="hd"><div class="hd-t">your <i>shelf</i></div><div class="osd sans" style="position:static">${S.tapes.length} tapes · ${S.collabs} collabs · ${Math.round(S.grindMin)} min grinding</div></div>` +
       S.tapes.slice(0, 12).map(t => { const m = [...M, CY].find(x => x.id === t.who) || M[0]; return `<div class="tape"><div class="lb" style="background:${t.replay ? '#f4f2f5' : PAL[m.k][4]}"><span class="lbf">${face(m, 34)}</span>${t.replay ? 'c.y. live' : t.who + ' × you'}<small>${t.replay ? 'replay' : t.min + ' min'} · ${t.date}</small></div><div class="reels"><div class="reel"></div><div class="reel"></div></div></div>`; }).join('') + `</div>`;
-    keys([{ i: '🏠', l: 'lounge', fn: () => go('lounge') }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '✕', l: 'back', fn: () => go('lounge') }]);
+    keys([{ i: '🧠', l: 'skills', fn: () => go('skills') }, { i: '📺', l: 'guide', fn: () => go('guide') }, BLANK, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]);
   },
   skills({ q = '' } = {}) {
     const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -358,7 +394,7 @@ const MODES = {
       <div class="skgrid">${list.length ? list.map((k, i) => cart(k, i)).join('') : `<div class="empty">no playbook yet · match someone and turn skills rec on</div>`}</div></div>`;
     const inp = $('#skq'); inp.addEventListener('input', () => { clearTimeout(R.qT); R.qT = setTimeout(() => { const v = inp.value; go('skills', { q: v }); const n = $('#skq'); n.focus(); n.setSelectionRange(v.length, v.length); }, 220); });
     view.querySelectorAll('.cart').forEach(c => c.addEventListener('click', () => { SFX.key(); openSkill(c.dataset.by); }));
-    keys([{ i: '📥', l: 'installed', fn: () => { const ins = S.skills.filter(k => S.installed.includes(k.by)); toast(ins.length ? `your stack: ${ins.map(k => k.title).join(' · ')}` : 'nothing installed yet'); } }, { i: '🔍', l: 'search', fn: () => $('#skq').focus() }, { i: '🔴', l: 'skills rec', fn: toggleSkills, lit: R.skillsOn }, { i: '🏠', l: 'lounge', fn: () => go('lounge') }], 'learn');
+    keys([{ i: '📥', l: 'my stack', fn: () => { const ins = S.skills.filter(k => S.installed.includes(k.by)); toast(ins.length ? `your stack · ${ins.map(k => k.title).join(' · ')}` : 'nothing installed yet'); } }, BLANK, BLANK, { i: '🏠', l: 'lounge', fn: () => go('lounge') }], 'open');
   },
   skill({ by }) {
     const k = S.skills.find(x => x.by === by) || { by, from: 'not captured yet', uses: 0, ...SKILL_OF[by] }, m = M.find(x => x.id === by), ins = S.installed.includes(by);
@@ -366,27 +402,27 @@ const MODES = {
     view.innerHTML = `<div class="skdetail"><div class="skd-l"><div class="cart big" style="--c:${PAL[m.k][4]}"><div class="cart-lb">${face(m, 46)}<b>${k.title}</b></div><div class="cart-meta">${m.id} · ${k.from}</div><div class="cart-notch"></div></div>
       <div class="skd-by">${face(m, 34)}<span>taught by <b>${m.id}</b> · ${m.co}</span></div><div class="skd-tags">${k.tags.map(t => `<span>${t}</span>`).join('')}</div><div class="skd-uses">${k.uses} founders installed</div></div>
       <ol class="skd-steps">${k.steps.map(t => `<li>${t}</li>`).join('')}</ol></div>`;
-    keys([{ i: '💾', l: 'skill.md', fn: () => exportSkill(k, m) }, { i: ins ? '✅' : '📌', l: ins ? 'installed' : 'install', fn: () => { if (!S.installed.includes(by)) { S.installed.push(by); k.uses++; SFX.win(); flashText('INSTALLED'); toast(`${k.title} is in your stack`); go('skill', { by }); } }, lit: ins }, { i: '📞', l: 'learn live', fn: () => learnLive(m) }, { i: '⏹', l: 'back', fn: () => go('skills') }], 'learn');
+    keys([{ i: '💾', l: 'export', fn: () => exportSkill(k, m) }, { i: ins ? '✅' : '📌', l: ins ? 'installed' : 'install', fn: () => { if (!S.installed.includes(by)) { S.installed.push(by); k.uses++; SFX.win(); flashText('INSTALLED'); toast(`${k.title} is in your stack`); go('skill', { by }); } }, lit: ins }, { i: '📞', l: 'learn live', fn: () => learnLive(m) }, { i: '↩', l: 'skills', fn: () => go('skills') }], 'call');
   },
   cy() {
     if (!R.cyLive) {
       view.innerHTML = `<div class="feed noise"></div><div class="bigname" style="left:30px;bottom:74px;font-size:96px">c.y.</div><div class="osd sans" style="left:34px;bottom:40px;color:#ff3b5c">off air · he drops in when he drops in</div>` + st('stay tuned', 'w', 'right:34px;top:30px', -4);
-      keys([{ i: '✋', l: 'raise', fn: raise }, { i: '🔔', l: 'notify me', fn: () => toast("we'll ping you when c.y. goes live") }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '🏠', l: 'leave', fn: () => go('lounge') }]); return;
+      keys([{ i: '🔔', l: 'notify me', fn: () => toast("you'll get a ping when c.y. goes live") }, BLANK, BLANK, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]); return;
     }
     view.innerHTML = feed(CY, { talk: true }) + `<div class="osd" style="left:30px;top:26px;font-size:32px">CH 00</div><div class="bigname" style="left:30px;bottom:74px;font-size:110px">c.y.</div><div class="osd sans" style="left:34px;bottom:40px">live · ${16 + S.hands} watching · recording to the shelf</div>` +
       st('SAFE or priced?', 'w', 'right:34px;top:30px;font-size:28px', -4) + st(`✋ ${S.hands + 2} asked this`, '', 'right:60px;top:100px', 4);
-    keys([{ i: '✋', l: 'raise', fn: raise }, { i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '💗', l: 'love', fn: () => react('💗', 3) }, { i: '🏠', l: 'leave', fn: () => go('lounge') }]);
+    keys([{ i: '✋', l: 'raise hand', fn: raise }, { i: '🔥', l: 'react', fn: () => react('🔥', 3) }, BLANK, { i: '🏠', l: 'lounge', fn: () => go('lounge') }]);
     R.auto = setInterval(() => react(['💗', '🔥', '✋', '💗'][Math.random() * 4 | 0], 1 + (Math.random() * 2 | 0)), 1400);
   },
 };
-function paintStars(v) { view.querySelectorAll('#stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= v)); const h = $('#rateHint'); if (h && !R.rateLocked) h.textContent = v ? ['', 'meh', 'ok', 'good', 'great', 'legendary'][v] + ' · press match to lock' : 'turn match to rate · press to lock'; }
-function rateTurn(dir) { if (R.rateLocked) return false; R.rate = Math.max(1, Math.min(5, (R.rate || 0) + dir)); paintStars(R.rate); matchKnob.ind.style.transform = `rotate(${-120 + (R.rate - 1) * 60}deg)`; lcdFlash(pad(R.rate), 'stars', '05', 'of', ['', 'MEH', 'OK', 'GOOD', 'GREAT', 'LEGENDARY'][R.rate]); return true; }
+function paintStars(v) { view.querySelectorAll('#stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= v)); const h = $('#rateHint'); if (h && !R.rateLocked) h.textContent = v ? ['', 'meh', 'ok', 'good', 'great', 'legendary'][v] + ' · press to lock' : 'turn match · press to lock'; }
+function rateTurn(dir) { if (R.rateLocked) return false; R.rate = Math.max(1, Math.min(5, (R.rate || 0) + dir)); paintStars(R.rate); matchKnob.ind.style.transform = `rotate(${-120 + (R.rate - 1) * 60}deg)`; lcdFlash(pad(R.rate), 'stars', '05', 'of', ['', 'meh', 'ok', 'good', 'great', 'legendary'][R.rate]); return true; }
 function lockRate() {
   if (!R.rate) { toast('turn match to pick 1 to 5 stars first'); return; }
   R.rateLocked = true; S.ratings.push(R.rate); paintStars(R.rate); SFX.win(); buzz([20, 40, 20]);
   const avg = S.ratings.reduce((a, b) => a + b, 0) / S.ratings.length, p = R.partner, [, pa] = NERD[p.id] || [0, 4.5];
   $('#rateHint').textContent = `locked · ${R.rate} ★${R.tags.size ? ' · ' + [...R.tags].join(', ') : ''}`;
-  $('#rateData').innerHTML = `your sessions avg <b>${avg.toFixed(1)}</b> · ${p.id} avg <b>${pa.toFixed(1)}</b><br>${R.rate >= 4 ? `4★+ means ${p.id} gets matched with you first next time` : `under 4★ means we'll match you with someone new`}`;
+  $('#rateData').innerHTML = `you avg <b>${avg.toFixed(1)}★</b> · ${p.id} avg <b>${pa.toFixed(1)}★</b><br>${R.rate >= 4 ? `${p.id} moves to the top of your matches` : `next match will be someone new`}`;
   view.querySelector('.rp-rate').classList.add('locked'); $('#kMatch .knob-lab').textContent = 'match';
   if (R.rate >= 4 && !R.endorsed) $('#pon').classList.add('nudge');
 }
@@ -402,7 +438,7 @@ function followUp(p) {
   const notes = R.items.map(it => `- ${it.who}: ${it.t} (${it.due})`).join('\\n');
   const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MNTv Live//EN\r\nBEGIN:VEVENT\r\nUID:mntv-${Date.now()}@musicnerd\r\nDTSTAMP:${f(new Date())}\r\nDTSTART:${f(d)}\r\nDTEND:${f(e)}\r\nSUMMARY:MNTv rematch · ${p.id} × you\r\nDESCRIPTION:Next moves from session ${pad(S.tapes.length)}:\\n${notes}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
   try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = `mntv-rematch-${p.id}.ics`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
-  SFX.win(); toast(`rematch with ${p.id} · ${d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()} 4pm · invite downloaded`);
+  SFX.win(); toast(`rematch · ${d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()} 4pm · invite saved`);
   $('.key[data-k="1"]').classList.add('lit');
 }
 function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16).toUpperCase().padStart(8, '0'); }
@@ -418,9 +454,9 @@ function endorse(p, topic) {
     <div class="cert-m">receipt ${id} · session ${pad(S.tapes.length)} · ${R.rate ? R.rate + '★ · ' : ''}${Math.max(1, Math.round((Date.now() - R.callStart) / 60000))} min</div>
     <div class="cert-m">${p.id} now has <b>${n[0]}</b> nerd endorsements in ${topic}</div></div></div>`;
   view.appendChild(box); SFX.clunk(); setTimeout(() => SFX.win(), 260); buzz([30, 60, 30]);
-  setTimeout(() => { const c = $('#cosig'); if (c) c.innerHTML = `${face(p, 28)} ${p.id} <i class="ok">signed</i>`; S.myEndorse++; toast(`${p.id} countersigned · and endorsed you back for follow-through`); S.wire.push(`🏅 you endorsed ${p.id} for ${topic}`); marquee(); react('🏅', 3); }, 1800);
+  setTimeout(() => { const c = $('#cosig'); if (c) c.innerHTML = `${face(p, 28)} ${p.id} <i class="ok">signed</i>`; S.myEndorse++; toast(`${p.id} signed · and vouched for your follow-through`); S.wire.push(`🏅 you endorsed ${p.id} for ${topic}`); marquee(); react('🏅', 3); }, 1800);
   setTimeout(() => box.classList.add('tuck'), 4200); setTimeout(() => box.remove(), 4800);
-  const pb = $('#ponBtn'); if (pb) { pb.textContent = '🏅 endorsed'; pb.disabled = true; } $('#pon') && $('#pon').classList.remove('nudge');
+  const pb = $('#ponBtn'); if (pb) { pb.innerHTML = `<span class="kcap ok">${icon('check')}</span>signed by both`; } $('#pon') && $('#pon').classList.remove('nudge');
   $('.key[data-k="0"]').classList.add('lit');
 }
 function saveSkill(p) {
@@ -431,7 +467,7 @@ function saveSkill(p) {
 function cart(k, i) { const m = M.find(x => x.id === k.by); return `<button class="cart" data-by="${k.by}" style="--c:${PAL[m.k][4]}"><div class="cart-lb">${face(m, 30)}<b>${k.title}</b></div><div class="cart-meta">${m.id} · 🏅 ${(NERD[k.by] || [0])[0]} · ${k.uses} installs${S.installed.includes(k.by) ? ' · ✅' : ''}</div><div class="cart-notch"></div></button>`; }
 function openSkill(by) { go('skill', { by }); }
 function learnLive(m) { if (!m.grind) { toast(`${m.id} isn't grinding right now · we'll ping you`); return; } R.partner = m; toast(`calling ${m.id} to learn it live`); go('tuning', { who: m }); }
-function toggleSkills() { R.skillsOn = !R.skillsOn; $('#skillsSw').classList.toggle('on', R.skillsOn); SFX.clunk(); lcdFlash(R.skillsOn ? 'ON' : 'OF', 'skills', pad(S.skills.length), 'saved', R.skillsOn ? 'CHATS → PLAYBOOKS' : 'SKILLS REC OFF'); if (R.mode === 'skills') go('skills'); toast(R.skillsOn ? 'skills rec on · both people see it' : 'skills rec off · chats stay off the record'); }
+function toggleSkills() { R.skillsOn = !R.skillsOn; $('#skillsSw').classList.toggle('on', R.skillsOn); SFX.clunk(); lcdFlash(R.skillsOn ? '01' : '00', 'skills rec', pad(S.skills.length), 'saved', R.skillsOn ? 'chats → playbooks' : 'off the record'); if (R.mode === 'skills') go('skills'); toast(R.skillsOn ? 'skills rec on · both of you see it' : 'skills rec off · this chat stays off the record'); }
 function captureSkill(p, mins) {
   const ex = S.skills.find(k => k.by === p.id), t = SKILL_OF[p.id];
   if (ex) { ex.uses++; ex.from = `tape ${pad(S.tapes.length)} · v${(ex.v = (ex.v || 1) + 1)}`; } else S.skills.unshift({ by: p.id, from: `tape ${pad(S.tapes.length)} · ${S.tapes[0].date}`, uses: 1, ...t });
@@ -444,27 +480,31 @@ function exportSkill(k, m) {
   const slug = k.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
   const md = `---\nname: ${slug}\ndescription: ${k.title}. A founder playbook from the MNTv Live network, taught by ${m.id} (${m.co}).\n---\n\n# ${k.title}\n\nUse this when a founder or artist asks how to ${k.title}.\n\n## Steps\n\n${k.steps.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\n## Source\n\n- Taught by: ${m.id}, ${m.co}\n- Captured from: ${k.from}\n- Tags: ${k.tags.join(', ')}\n- Network: MNTv Live (Music Nerd), demo data\n`;
   try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' })); a.download = `${slug}.SKILL.md`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
-  SFX.win(); toast('SKILL.md downloaded · drop it into your AI assistant');
+  SFX.win(); toast('SKILL.md saved · drop it into your AI assistant');
 }
-function passAux() { if (R.sess) R.sess.aux++; R.auxIdx++; toast(`aux passed to ${R.partner ? R.partner.id : 'them'} · new key`); SFX.static(.25); react('🎧', 2); }
+function markMoment() {
+  if (!R.sess) return; R.sess.marks = (R.sess.marks || 0) + 1; SFX.pop ? SFX.pop() : SFX.key(); buzz(12);
+  const d = document.createElement('div'); d.className = 'markfx'; d.innerHTML = `${icon('mark')}<span>marked · ${mmss(Math.round((Date.now() - R.callStart) / 1000))}</span>`; $('#reacts').appendChild(d); setTimeout(() => d.remove(), 1400);
+}
+function passAux() { if (R.sess) R.sess.aux++; R.auxIdx++; toast(`aux to ${R.partner ? R.partner.id : 'them'}`); SFX.static(.25); react('🎧', 2); }
 function raise() { S.hands++; toast(`you're in c.y.'s queue · #${S.hands - 6}`); react('✋', 3); }
 function helpAsk(m) {
   if (R.playStep !== 2) { toast('wait for the ask'); return; }
   if (S.helped.includes(m.id)) { toast(`you already pinged ${m.id}`); return; }
-  S.helped.push(m.id); S.saved++; SFX.win(); react('🙋', 3); toast(`pinged ${m.id} · ${S.saved} calls c.y. didn't take`);
+  S.helped.push(m.id); S.saved++; SFX.win(); react('🙋', 3); toast(`sent to ${m.id} · ${S.saved} calls off c.y.'s plate`);
 }
 function asks() {
   const ex = view.querySelector('.asklist'); if (ex) { ex.remove(); return; }
   const list = M.filter(m => m.drop), box = document.createElement('div'); box.className = 'asklist';
   box.innerHTML = list.map(m => `<div class="ask">${face(m, 44)}<p>${m.drop.ask}<small>${m.id} · ${m.co}</small></p><button data-id="${m.id}" ${S.helped.includes(m.id) ? 'disabled' : ''}>${S.helped.includes(m.id) ? 'sent' : 'i got you'}</button></div>`).join('');
   view.appendChild(box);
-  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const id = b.dataset.id; if (S.helped.includes(id)) return; S.helped.push(id); S.saved++; SFX.win(); b.textContent = 'sent'; b.disabled = true; toast(`pinged ${id} · ${S.saved} calls c.y. didn't take`); }));
+  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const id = b.dataset.id; if (S.helped.includes(id)) return; S.helped.push(id); S.saved++; SFX.win(); b.textContent = 'sent'; b.disabled = true; toast(`sent to ${id} · ${S.saved} calls off c.y.'s plate`); }));
 }
 function nextDrop(auto) { R.sel = (R.sel + 1) % all().length; staticBurst(220); if (auto && R.sel === 0) { go('guide'); return; } go('play', { auto }); }
 function startRec() {
   R.recOn = true; R.recLeft = 60; R.chunks = [];
   if (R.cam && window.MediaRecorder) { try { R.rec = new MediaRecorder(R.cam); R.rec.ondataavailable = e => e.data.size && R.chunks.push(e.data); R.rec.start(); } catch { R.rec = null; } }
-  R.recRender(); SFX.clunk(); tone(880, .15, .15, 'square');
+  R.recRender(); SFX.clunk(); tone(880, .15, .15, 'square'); $('#k0i').innerHTML = icon('⏹'); $('#k0l').textContent = 'send';
   R.modeT = setInterval(() => { R.recLeft--; const o = view.querySelector('.osd'); if (o) o.textContent = 'REC 00:' + pad(R.recLeft); if (R.recLeft <= 0) sendDrop(); }, 1000);
 }
 function sendDrop() {
@@ -487,7 +527,7 @@ function setAir(on, quiet) {
   SFX.onair(on);
   if (on) {
     R.airStart = Date.now(); if (!R.timerRun) R.timerRun = true; bumpStreak(); if (R.onboard === 0) setOnboard(1);
-    flashText('ON AIR'); toast(`you're on air · ${TIMES[R.timerIdx]} min grind · matchable`);
+    flashText('ON AIR'); toast(`on air · ${TIMES[R.timerIdx]} min session · you're matchable`);
     S.wire.push('you · on air, grinding'); marquee(); scheduleIncoming();
   } else {
     clearTimeout(R.ringT); R.incoming = null; $('#kMatch').classList.remove('ringing'); R.timerRun = false;
@@ -504,7 +544,7 @@ function scheduleIncoming() {
     if (!R.air || !R.on || !['lounge', 'guide', 'shelf'].includes(R.mode)) { scheduleIncoming(); return; }
     const p = grinding()[Math.random() * grinding().length | 0]; R.incoming = p; SFX.ring(); showRing(p);
     $('#kMatch').classList.add('ringing'); $('#kMatch .knob-lab').textContent = 'pick up';
-    toast(`${p.id} matched with you · press match to pick up`);
+    toast(`${p.id} is calling`);
     let n = 0; const rr = setInterval(() => { if (!R.incoming || ++n > 4) { clearInterval(rr); if (R.incoming) { R.incoming = null; hideRing(); $('#kMatch').classList.remove('ringing'); $('#kMatch .knob-lab').textContent = 'match'; toast(`missed ${p.id}`); scheduleIncoming(); } return; } SFX.ring(); }, 1800);
   }, (R.rang ? 16000 : 6000) + Math.random() * 8000); R.rang = true;
 }
@@ -542,19 +582,19 @@ class Knob {
   press() { SFX.clunk(); this.btn.classList.add('pressed'); setTimeout(() => this.btn.classList.remove('pressed'), 120); this.onPress && this.onPress(); }
 }
 const matchKnob = new Knob($('#kMatch'), { n: 4, range: 240, idx: 0, size: 250, labels: FILTERS.map(f => f[0]),
-  onStep: i => { R.filter = i; const role = FILTERS[i][1]; const c = grinding().filter(m => !role || m.role === role).length; lcdFlash(pad(c), 'grinding', pad(i + 1), 'filter', `MATCH: ${FILTERS[i][0].toUpperCase()}`); },
+  onStep: i => { R.filter = i; const role = FILTERS[i][1]; const c = grinding().filter(m => !role || m.role === role).length; lcdFlash(pad(c), 'grinding', pad(i + 1), 'filter', `match · ${FILTERS[i][0]}`); },
   onTurn: dir => R.mode === 'after' && rateTurn(dir),
   onPress: () => matchPress() });
 const airKnob = new Knob($('#kAir'), { n: 2, range: 90, idx: 0, size: 96, labels: ['end', 'start'],
   onStep: i => setAir(i === 1), onPress: () => setAir(!R.air) });
 const timerKnob = new Knob($('#kTimer'), { n: TIMES.length, range: 270, idx: R.timerIdx, size: 96, labels: [],
-  onStep: i => { R.timerIdx = i; if (!R.timerRun) R.timerLeft = TIMES[i] * 60; else R.timerLeft = TIMES[i] * 60; lcdFlash(pad(TIMES[i]), 'min', '00', 'sec', R.timerRun ? 'RESET · RUNNING' : 'TIMER SET'); },
-  onPress: () => { R.timerRun = !R.timerRun; if (R.timerLeft <= 0) R.timerLeft = TIMES[R.timerIdx] * 60; toast(R.timerRun ? `timer running · ${mmss(R.timerLeft)}` : 'timer paused'); lcdRender(); } });
+  onStep: i => { R.timerIdx = i; if (!R.timerRun) R.timerLeft = TIMES[i] * 60; else R.timerLeft = TIMES[i] * 60; lcdFlash(pad(TIMES[i]), 'min', '00', 'sec', R.timerRun ? 'timer reset' : 'timer set'); },
+  onPress: () => { R.timerRun = !R.timerRun; if (R.timerLeft <= 0) R.timerLeft = TIMES[R.timerIdx] * 60; toast(R.timerRun ? `timer · ${mmss(R.timerLeft)}` : 'timer paused'); lcdRender(); } });
 const volKnob = new Knob($('#kVol'), { n: 11, range: 270, idx: R.vol, size: 96, labels: [],
-  onStep: i => { R.vol = i; if (A.master) A.master.gain.setTargetAtTime(volGain(), A.ctx.currentTime, .04); lcdFlash(pad(i), 'vol', i === 10 ? '11' : '--', i === 10 ? 'lol' : '', i === 0 ? 'MUTED' : 'VOLUME'); },
-  onPress: () => { R.vol = R.vol ? 0 : 6; volKnob.set(R.vol); knobLabels(); if (A.master) A.master.gain.setTargetAtTime(volGain(), A.ctx.currentTime, .04); lcdFlash(pad(R.vol), 'vol', '--', '', R.vol ? 'UNMUTED' : 'MUTED'); } });
+  onStep: i => { R.vol = i; if (A.master) A.master.gain.setTargetAtTime(volGain(), A.ctx.currentTime, .04); lcdFlash(pad(i), 'vol', '10', 'max', i === 0 ? 'muted' : 'volume'); },
+  onPress: () => { R.vol = R.vol ? 0 : 6; volKnob.set(R.vol); knobLabels(); if (A.master) A.master.gain.setTargetAtTime(volGain(), A.ctx.currentTime, .04); lcdFlash(pad(R.vol), 'vol', '--', '', R.vol ? 'unmuted' : 'muted'); } });
 const adlibKnob = new Knob($('#kAdlib'), { n: ADLIBS.length, range: 270, idx: R.adlib, size: 96, labels: [],
-  onStep: i => { R.adlib = i; lcdFlash(pad(i + 1), 'adlib', pad(ADLIBS.length), 'of', ADLIBS[i][0].toUpperCase()); },
+  onStep: i => { R.adlib = i; lcdFlash(pad(i + 1), 'adlib', pad(ADLIBS.length), 'of', 'adlib · ' + ADLIBS[i][0]); },
   onPress: () => fireAdlib() });
 function knobLabels() {
   $('#kAir .kn-l').textContent = R.air ? 'live' : 'on air';
@@ -600,6 +640,7 @@ pw.addEventListener('click', () => R.on ? powerOff() : powerOn());
 $('#skillsSw').addEventListener('click', () => { if (!R.on) { powerOn(); return; } toggleSkills(); });
 po.addEventListener('click', powerOn);
 $('#strip').addEventListener('click', e => { const b = e.target.closest('.ch'); if (!b) return; if (!R.on) { powerOn(); return; } const i = +b.dataset.ch; SFX.key(); staticBurst(220); if (b.dataset.ch === 'sk') { go('skills'); return; } if (i === 0) { go('cy'); chFlash('00'); } else { R.ch = i - 1; go('lounge'); chFlash(pad(i)); } });
+$('#strip').addEventListener('scroll', stripFade, { passive: true });
 /* swipe the screen to surf */
 let sw = null;
 $('#screen').addEventListener('pointerdown', e => { if (R.on && R.mode === 'lounge') sw = e.clientX; });
@@ -638,7 +679,7 @@ room.addEventListener('pointermove', e => {
 });
 addEventListener('resize', layout);
 layout(); marquee(); strip(); knobLabels();
-keys([{ i: '🔥', l: 'fire', fn() {} }, { i: '💗', l: 'love', fn() {} }, { i: '📺', l: 'guide', fn() {} }, { i: '📼', l: 'shelf', fn() {} }]);
+keys([{ i: '📺', l: 'guide', fn() {} }, { i: '🧠', l: 'skills', fn() {} }, { i: '📼', l: 'shelf', fn() {} }, BLANK]);
 lcdRender();
 window.__mntv = { R, S, go, powerOn, setAir };
 })();
