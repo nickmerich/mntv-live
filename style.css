@@ -621,7 +621,7 @@ kbd{font:800 10px Inter,sans-serif;letter-spacing:.04em;min-width:20px;padding:3
 .key.blank,.key[disabled]{opacity:1}
 .rp-hint{font-family:Inter,sans-serif;font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(25,255,184,.8);line-height:1.5;max-width:260px}
 
-/* ---- Music Nerdland nameplate ---- */
+/* ---- Music Nerd Live nameplate ---- */
 .brandstack{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin-right:auto}
 .brandstack .model{margin-right:0;padding-left:4px}
 .nameplate{position:relative;display:inline-flex;align-items:center;padding:2px;border-radius:14px;overflow:hidden;

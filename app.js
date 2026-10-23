@@ -1,4 +1,4 @@
-/* MNTv Live prototype v2 · five-knob deck · demo data only */
+/* Music Nerd Live prototype v2 · five-knob deck · demo data only */
 (() => {
 const $ = (s, r = document) => r.querySelector(s);
 const W = 1600, H = 900, PW = 440, PH = 960;
@@ -341,7 +341,7 @@ const MODES = {
   },
   guide() {
     const list = all(); R.sel = Math.min(R.sel, list.length - 1);
-    view.innerHTML = `<div class="grid"><div class="hd"><div class="hd-t">this week on <i>mntv</i></div>${st("c.y.'s pick: kai", '', 'position:static;transform:rotate(-3deg);font-size:17px')}<div class="osd sans" style="position:static">wk 43 · ${droppedCount()} of ${list.length} dropped</div></div>` +
+    view.innerHTML = `<div class="grid"><div class="hd"><div class="hd-t">this week on <i>music nerd live</i></div>${st("c.y.'s pick: kai", '', 'position:static;transform:rotate(-3deg);font-size:17px')}<div class="osd sans" style="position:static">wk 43 · ${droppedCount()} of ${list.length} dropped</div></div>` +
       list.map((m, i) => { const d = m === YOU ? S.dropped : !!m.drop;
         return `<div class="tile" data-i="${i}" style="${i === R.sel ? 'box-shadow:0 0 0 3px #fff' : ''}">${feed(m, { off: !d })}` +
           (d ? `<div class="len">${fmt(m === YOU ? (R.myDrop ? R.myDrop.len : 60) : m.drop.len)}</div><div class="tag" style="color:${m.id === 'kai' ? 'var(--pink)' : 'var(--mint)'}">${m.id === 'kai' ? 'PICK' : 'NEW'}</div>` : `<div class="tag" style="color:#ff3b5c">OFF AIR</div>`) +
@@ -436,8 +436,8 @@ function followUp(p) {
   const d = new Date(Date.now() + 3 * 864e5); d.setHours(16, 0, 0, 0); const e = new Date(d.getTime() + 15 * 6e4);
   const f = x => x.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
   const notes = R.items.map(it => `- ${it.who}: ${it.t} (${it.due})`).join('\\n');
-  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MNTv Live//EN\r\nBEGIN:VEVENT\r\nUID:mntv-${Date.now()}@musicnerd\r\nDTSTAMP:${f(new Date())}\r\nDTSTART:${f(d)}\r\nDTEND:${f(e)}\r\nSUMMARY:MNTv rematch · ${p.id} × you\r\nDESCRIPTION:Next moves from session ${pad(S.tapes.length)}:\\n${notes}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
-  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = `mntv-rematch-${p.id}.ics`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
+  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Music Nerd Live//EN\r\nBEGIN:VEVENT\r\nUID:mntv-${Date.now()}@musicnerd\r\nDTSTAMP:${f(new Date())}\r\nDTSTART:${f(d)}\r\nDTEND:${f(e)}\r\nSUMMARY:Music Nerd Live rematch · ${p.id} × you\r\nDESCRIPTION:Next moves from session ${pad(S.tapes.length)}:\\n${notes}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = `music-nerd-live-rematch-${p.id}.ics`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
   SFX.win(); toast(`rematch · ${d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()} 4pm · invite saved`);
   $('.key[data-k="1"]').classList.add('lit');
 }
@@ -478,7 +478,7 @@ function captureSkill(p, mins) {
 }
 function exportSkill(k, m) {
   const slug = k.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
-  const md = `---\nname: ${slug}\ndescription: ${k.title}. A founder playbook from the MNTv Live network, taught by ${m.id} (${m.co}).\n---\n\n# ${k.title}\n\nUse this when a founder or artist asks how to ${k.title}.\n\n## Steps\n\n${k.steps.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\n## Source\n\n- Taught by: ${m.id}, ${m.co}\n- Captured from: ${k.from}\n- Tags: ${k.tags.join(', ')}\n- Network: MNTv Live (Music Nerd), demo data\n`;
+  const md = `---\nname: ${slug}\ndescription: ${k.title}. A founder playbook from the Music Nerd Live network, taught by ${m.id} (${m.co}).\n---\n\n# ${k.title}\n\nUse this when a founder or artist asks how to ${k.title}.\n\n## Steps\n\n${k.steps.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\n## Source\n\n- Taught by: ${m.id}, ${m.co}\n- Captured from: ${k.from}\n- Tags: ${k.tags.join(', ')}\n- Network: MNTv Live (Music Nerd), demo data\n`;
   try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' })); a.download = `${slug}.SKILL.md`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
   SFX.win(); toast('SKILL.md saved · drop it into your AI assistant');
 }
@@ -632,7 +632,7 @@ const po = $('#powerOff'), pw = $('#power');
 function powerOn() {
   if (R.on) return; R.on = true; audioInit(); SFX.power(true);
   pw.classList.add('on'); po.classList.add('hide'); crt.classList.remove('off-anim'); void crt.offsetWidth; crt.classList.add('on-anim'); setTimeout(() => crt.classList.remove('on-anim'), 800);
-  go('lounge'); const sp = document.createElement('div'); sp.className = 'splash'; sp.innerHTML = '<img src="assets/specs.png" alt=""><b>mntv <i>live</i></b><span>members only · week 43</span>'; crt.appendChild(sp); setTimeout(() => sp.remove(), 1600); setTimeout(() => { if (R.onboard == null) setOnboard(0); }, 1700);
+  go('lounge'); const sp = document.createElement('div'); sp.className = 'splash'; sp.innerHTML = '<img src="assets/specs.png" alt=""><b>music nerd <i>live</i></b><span>members only · week 43</span>'; crt.appendChild(sp); setTimeout(() => sp.remove(), 1600); setTimeout(() => { if (R.onboard == null) setOnboard(0); }, 1700);
   if (!R.cyT) R.cyT = setTimeout(() => { R.cyLive = true; strip(); if (!R.air) $('#statusEtch').textContent = 'c.y. is live'; SFX.win(); toast('c.y. just went live · turn to ch 00'); S.wire.push('c.y. live now'); marquee(); }, 40000);
 }
 function powerOff() { R.on = false; SFX.power(false); clearModeTimers(); if (R.air) setAir(false, true); pw.classList.remove('on'); crt.classList.add('off-anim'); setTimeout(() => po.classList.remove('hide'), 420); if (A.ctx) A.ctx.suspend(); stopCam(); }

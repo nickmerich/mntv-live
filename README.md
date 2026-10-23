@@ -1,6 +1,6 @@
-# MNTv Live · prototype
+# Music Nerd Live · prototype
 
-A members-only, hardware-style TV for the people C.Y. Lee backs: a Music Nerd TV add-on.
+Music Nerd Live is a members-only, hardware-style TV for the people C.Y. Lee backs: a Music Nerd TV add-on.
 Give them your network, not your time.
 
 - **Five knobs:** Match (call someone who is grinding), On Air, Timer, Volume, Adlib
