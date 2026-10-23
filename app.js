@@ -48,7 +48,8 @@ const TIMES = [5, 10, 15, 25, 45, 60];
 const ADLIBS = [['yeah', 'YEAH!'], ['let’s go', 'LET’S GO!'], ['horn', '📯 HORN'], ['rewind', '⏪ REWIND'], ['scratch', 'SCRATCH'], ['boom', 'BOOM']];
 
 /* ---------------- state (in memory) ---------------- */
-const S = { skills: [['maya', 'tape 06 · oct 18', 31], ['dev', 'wk 43 drop', 22], ['nova', 'tape 04 · oct 15', 18], ['theo', 'tape 02 · oct 9', 27], ['otis', 'tape 05 · oct 17', 12], ['lux', 'wk 42 drop', 15], ['bea', 'tape 03 · oct 11', 9], ['kai', 'tape 07 · oct 18', 14]].map(([by, from, uses]) => ({ by, from, uses, ...SKILL_OF[by] })), installed: ['dev'], tapes: [{ who: 'jules', date: 'oct 21', min: 12 }, { who: 'ren', date: 'oct 20', min: 9 }, { who: 'kai', date: 'oct 18', min: 15 }, { who: 'c.y.', date: 'oct 16', min: 60, replay: true }],
+const NERD = { theo: [13, 4.8], jules: [9, 4.7], maya: [21, 4.9], ren: [4, 4.4], kai: [11, 4.6], ari: [16, 4.8], dev: [7, 4.5], lux: [12, 4.7], nova: [8, 4.6], sol: [6, 4.5], otis: [10, 4.7], bea: [5, 4.6] };
+const S = { endorsements: [], myEndorse: 3, ratings: [5, 4, 5, 5], kept: [7, 8], skills: [['maya', 'tape 06 · oct 18', 31], ['dev', 'wk 43 drop', 22], ['nova', 'tape 04 · oct 15', 18], ['theo', 'tape 02 · oct 9', 27], ['otis', 'tape 05 · oct 17', 12], ['lux', 'wk 42 drop', 15], ['bea', 'tape 03 · oct 11', 9], ['kai', 'tape 07 · oct 18', 14]].map(([by, from, uses]) => ({ by, from, uses, ...SKILL_OF[by] })), installed: ['dev'], tapes: [{ who: 'jules', date: 'oct 21', min: 12 }, { who: 'ren', date: 'oct 20', min: 9 }, { who: 'kai', date: 'oct 18', min: 15 }, { who: 'c.y.', date: 'oct 16', min: 60, replay: true }],
   streak: 12, lastDay: '', saved: 3, dropped: false, weekStreak: 13, wire: [], hands: 7, collabs: 1, helped: [], grindMin: 0 };
 const R = { on: false, mode: 'lounge', ch: 0, sel: 0, partner: null, modeT: null, auto: null, cam: null, rec: null, chunks: [], blob: null, recOn: false, recLeft: 60, chipsLit: {}, playStep: 0,
   cyLive: false, pocket: false, auxIdx: 0,
@@ -156,6 +157,7 @@ let toastT;
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
 function staticBurst(ms = 380) { const o = $('#staticOv'); o.classList.add('on', 'noise'); SFX.static(ms / 1000); setTimeout(() => o.classList.remove('on'), ms); }
 function react(e, n = 1) {
+  if (R.mode === 'call' && R.sess) R.sess.reacts += n;
   const box = $('#reacts');
   for (let i = 0; i < n; i++) setTimeout(() => { const d = document.createElement('div'); d.className = 'fly'; d.textContent = e; d.style.left = (15 + Math.random() * 70) + '%'; d.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px'); d.style.setProperty('--rot', (Math.random() * 40 - 20) + 'deg'); box.appendChild(d); setTimeout(() => d.remove(), 2500); }, i * 140);
 }
@@ -213,7 +215,7 @@ const MODES = {
     const m = curChan(), isYou = m === YOU, live = isYou ? true : !!m.grind;
     view.innerHTML = feed(m, { off: !live, cam: isYou }) +
       `<div class="osd" style="left:30px;top:26px;font-size:30px">CH ${pad(R.ch + 1)}</div>` +
-      (live ? (isYou ? l3(YOU, R.air ? 'on air · matchable' : 'off air · turn on air to get matched', R.air ? mmss(R.timerLeft) : '', R.air ? 'LIVE' : 'YOU') : l3(m, `${m.co} · ${m.grind}`, mmss(m.gl)))
+      (live ? (isYou ? l3(YOU, R.air ? 'on air · matchable' : 'off air · turn on air to get matched', R.air ? mmss(R.timerLeft) : '', R.air ? 'LIVE' : 'YOU') : l3(m, `🏅 ${(NERD[m.id] || [0])[0]} · ${m.co} · ${m.grind}`, mmss(m.gl)))
         : `<div class="l3 off"><span class="live-tag off">OFF</span><b>${m.id}</b><span class="l3s">not grinding right now</span></div>`) +
       st(`🔥 ${S.streak}`, '', 'right:30px;top:26px;font-size:24px', -6) + st(`${grinding().length + (R.air ? 1 : 0)} grinding`, 'm', 'right:44px;top:84px', 4) +
       (live && !isYou && SKILL_OF[m.id] ? `<button class="skchip" data-sk="${m.id}">🧠 ${SKILL_OF[m.id].title}</button>` : '');
@@ -235,7 +237,7 @@ const MODES = {
   call() {
     const p = R.partner; bumpStreak(); staticBurst(260); hideRing();
     if (!R.timerRun) R.timerRun = true;
-    R.callStart = Date.now();
+    R.callStart = Date.now(); R.sess = { reacts: 0, aux: 0, adYou: 0, adThem: 0, prompt: '' };
     view.innerHTML = feed(p, { talk: true }) + l3(p, `${p.co} · ${p.grind}`, '') +
       `<div class="pip">${feed(YOU, { cam: true })}<span class="pip-l">you</span></div>` +
       (R.skillsOn ? `<div class="skrec"><span class="dotk"></span>skills rec · both on</div>` : '') +
@@ -243,20 +245,61 @@ const MODES = {
     attachCam(); getCam().then(() => { if (R.mode === 'call') { const pf = view.querySelector('.pip .feed'); if (pf && R.cam && !pf.querySelector('video')) { pf.outerHTML = feed(YOU, { cam: true }); attachCam(); } } });
     if (R.onboard === 1) setOnboard(2);
     keys([{ i: '🔥', l: 'fire', fn: () => react('🔥', 3) }, { i: '💗', l: 'love', fn: () => react('💗', 3) }, { i: '🎧', l: 'pass aux', fn: passAux }, { i: '✕', l: 'end', fn: () => go('after') }], 'end');
-    R.auto = setInterval(() => { const r = Math.random(); if (r < .45) react(['😂', '🔥', '💗', '🎧'][Math.random() * 4 | 0]); else if (r < .52) { const a = Math.random() * ADLIBS.length | 0; ADLIB_FX[a](); flashText(ADLIBS[a][1]); } }, 2600);
+    R.auto = setInterval(() => { const r = Math.random(); if (r < .45) react(['😂', '🔥', '💗', '🎧'][Math.random() * 4 | 0]); else if (r < .52) { const a = Math.random() * ADLIBS.length | 0; ADLIB_FX[a](); flashText(ADLIBS[a][1]); R.sess.adThem++; } }, 2600);
   },
   after() {
-    const p = R.partner || M[0]; const mins = Math.max(1, Math.round((Date.now() - (R.callStart || Date.now())) / 60000));
-    S.tapes.unshift({ who: p.id, date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toLowerCase(), min: mins });
-    view.innerHTML = `<div class="split" style="filter:brightness(.3) blur(3px)">${feed(p)}${feed(YOU)}</div>` +
-      `<div class="tape bigtape spinning"><div class="lb" style="background:${PAL[p.k][4]}"><span class="lbf">${face(p, 54)}</span>${p.id} × you<small>tape ${pad(S.tapes.length)} · ${mins} min · ${S.tapes[0].date}</small></div><div class="reels"><div class="reel"></div><div class="reel"></div></div></div>` +
-      st('new tape on your shelf', 'm', R.skillsOn ? 'left:30px;bottom:30px' : 'left:50%;bottom:34px;transform:translateX(-50%)', 2);
-    SFX.win();
-    if (R.skillsOn && SKILL_OF[p.id]) setTimeout(() => { if (R.mode === 'after') captureSkill(p, mins); }, 1500);
-    else if (!R.skillsOn) setTimeout(() => { if (R.mode === 'after') view.insertAdjacentHTML('beforeend', st('skills rec was off · this playbook is gone', 'r', 'left:50%;top:30px;transform:translateX(-50%)', -2)); }, 1200);
-    keys([{ i: '🤝', l: 'collab', fn: collab }, { i: '👋', l: 'later', fn: () => go('lounge') }, { i: '📺', l: 'guide', fn: () => go('guide') }, { i: '📼', l: 'shelf', fn: () => go('shelf') }]);
+    const p = R.partner || M[0], ss = R.sess || { reacts: 0, aux: 0, adYou: 0, adThem: 0 };
+    const secs = Math.max(30, Math.round((Date.now() - (R.callStart || Date.now())) / 1000)), mins = Math.max(1, Math.round(secs / 60));
+    const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toLowerCase();
+    S.tapes.unshift({ who: p.id, date, min: mins });
+    const n = S.tapes.length, sk = SKILL_OF[p.id], topic = sk ? sk.tags[0] : 'craft';
+    const you = 38 + ((p.id.charCodeAt(0) * 7 + n * 5) % 22), energy = Math.min(99, 40 + ss.reacts * 4 + (ss.adYou + ss.adThem) * 7 + ss.aux * 5);
+    let skillRow = '<span class="muted">skills rec off · no playbook saved</span>';
+    if (R.skillsOn && sk) { const r = saveSkill(p); skillRow = `<button class="rp-skill" data-by="${p.id}">🧠 ${sk.title}<small>${r.merged ? 'merged · v' + r.v : 'new playbook'}</small></button>`; }
+    const [nerdN, nerdAvg] = NERD[p.id] || [3, 4.5];
+    R.rate = 0; R.rateLocked = false; R.tags = new Set(); R.endorsed = false;
+    R.items = [
+      { who: 'you', t: p.drop ? `answer ${p.id}'s ask: ${p.drop.ask}` : `send ${p.id} one intro for ${p.grind}`, due: 'fri', done: false },
+      { who: p.id, t: sk ? `send you their playbook: ${sk.title}` : `share notes on ${p.grind}`, due: 'thu', done: false },
+      { who: 'both', t: 'rematch in 3 days to check progress', due: 'mon', done: false },
+    ];
+    view.innerHTML = `<div class="report">
+      <section class="rp-card rp-sess">
+        <div class="rp-hd">${face(p, 44)}<div><b>${p.id} × you</b><small>session ${pad(n)} · tape ${pad(n)} · ${date}</small></div></div>
+        <div class="rp-stats">
+          <div><span class="rp-n">${pad(mins)}</span><span class="rp-l">minutes</span></div>
+          <div><span class="rp-n">${pad(energy)}</span><span class="rp-l">energy</span></div>
+          <div><span class="rp-n">${pad(ss.reacts)}</span><span class="rp-l">reactions</span></div>
+          <div><span class="rp-n">${pad(ss.adYou + ss.adThem)}</span><span class="rp-l">adlibs</span></div>
+        </div>
+        <div class="rp-bar"><span style="width:${you}%"></span><em>you ${you}%</em><em>${p.id} ${100 - you}%</em></div>
+        <div class="rp-topics"><span>${topic}</span>${sk ? sk.tags.slice(1).map(t => `<span>${t}</span>`).join('') : ''}<span>${p.role}</span></div>
+        ${skillRow}
+      </section>
+      <section class="rp-card rp-rate">
+        <div class="rp-k">rate this session</div>
+        <div class="stars" id="stars">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" aria-label="${i} stars">★</button>`).join('')}</div>
+        <div class="rp-hint" id="rateHint">turn match to rate · press to lock</div>
+        <div class="rp-tags">${['learned something', 'fun', 'intro made', 'would rematch', 'too short'].map(t => `<button data-t="${t}">${t}</button>`).join('')}</div>
+        <div class="rp-data" id="rateData">${p.id}: ${nerdAvg.toFixed(1)} avg · ${nerdN} nerd endorsements in ${topic}</div>
+      </section>
+      <section class="rp-card rp-next">
+        <div class="rp-k">next moves <small>auto-drafted · tap when done</small></div>
+        <div id="items">${R.items.map((it, i) => `<button class="item" data-i="${i}"><span class="box"></span><span class="it-t">${it.t}</span><span class="it-m">${it.who === 'you' ? face(YOU, 20) : it.who === 'both' ? '👥' : face(p, 20)} ${it.due}</span></button>`).join('')}</div>
+        <div class="rp-kept">promises kept <b id="keptPct">${Math.round(S.kept[0] / S.kept[1] * 100)}%</b> · last 30 days</div>
+      </section>
+      <section class="rp-pon" id="pon"><div class="pon-l"><span class="pon-badge">PROOF OF NERD</span><span>endorse ${p.id} for <b>${topic}</b>. both of you sign it and it shows up on their channel and in matching.</span></div><button class="pon-btn" id="ponBtn">🏅 endorse ${p.id}</button></section>
+    </div>`;
+    SFX.win(); flashText('SESSION SAVED');
+    view.querySelectorAll('#stars button').forEach(b => { b.addEventListener('mouseenter', () => !R.rateLocked && paintStars(+b.dataset.v)); b.addEventListener('click', () => { R.rate = +b.dataset.v; lockRate(); }); });
+    $('#stars').addEventListener('mouseleave', () => paintStars(R.rate));
+    view.querySelectorAll('.rp-tags button').forEach(b => b.addEventListener('click', () => { SFX.key(); b.classList.toggle('on'); R.tags[b.classList.contains('on') ? 'add' : 'delete'](b.dataset.t); }));
+    view.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => toggleItem(+b.dataset.i)));
+    const rs = view.querySelector('.rp-skill'); if (rs) rs.addEventListener('click', () => openSkill(rs.dataset.by));
+    $('#ponBtn').addEventListener('click', () => endorse(p, topic));
+    keys([{ i: '🏅', l: 'endorse', fn: () => endorse(p, topic) }, { i: '📅', l: 'follow-up', fn: () => followUp(p) }, { i: '🤝', l: 'collab', fn: collab }, { i: '🏠', l: 'done', fn: () => go('lounge') }], 'rate');
     function collab() {
-      if (KEYS[0].lit) return; KEYS[0].lit = true; $('.key[data-k="0"]').classList.add('lit'); toast(`collab sent to ${p.id}`);
+      if (KEYS[2].lit) return; KEYS[2].lit = true; $('.key[data-k="2"]').classList.add('lit'); toast(`collab sent to ${p.id}`);
       setTimeout(() => { S.wire.push(`${p.id} × you · collab`); S.collabs++; marquee(); SFX.win(); toast(`${p.id} tapped collab too · you're on the wire`); react('🤝', 4); }, 1700);
     }
   },
@@ -336,7 +379,56 @@ const MODES = {
     R.auto = setInterval(() => react(['💗', '🔥', '✋', '💗'][Math.random() * 4 | 0], 1 + (Math.random() * 2 | 0)), 1400);
   },
 };
-function cart(k, i) { const m = M.find(x => x.id === k.by); return `<button class="cart" data-by="${k.by}" style="--c:${PAL[m.k][4]}"><div class="cart-lb">${face(m, 30)}<b>${k.title}</b></div><div class="cart-meta">${m.id} · ${k.steps.length} steps · ${k.uses} installs${S.installed.includes(k.by) ? ' · ✅' : ''}</div><div class="cart-notch"></div></button>`; }
+function paintStars(v) { view.querySelectorAll('#stars button').forEach(b => b.classList.toggle('on', +b.dataset.v <= v)); const h = $('#rateHint'); if (h && !R.rateLocked) h.textContent = v ? ['', 'meh', 'ok', 'good', 'great', 'legendary'][v] + ' · press match to lock' : 'turn match to rate · press to lock'; }
+function rateTurn(dir) { if (R.rateLocked) return false; R.rate = Math.max(1, Math.min(5, (R.rate || 0) + dir)); paintStars(R.rate); matchKnob.ind.style.transform = `rotate(${-120 + (R.rate - 1) * 60}deg)`; lcdFlash(pad(R.rate), 'stars', '05', 'of', ['', 'MEH', 'OK', 'GOOD', 'GREAT', 'LEGENDARY'][R.rate]); return true; }
+function lockRate() {
+  if (!R.rate) { toast('turn match to pick 1 to 5 stars first'); return; }
+  R.rateLocked = true; S.ratings.push(R.rate); paintStars(R.rate); SFX.win(); buzz([20, 40, 20]);
+  const avg = S.ratings.reduce((a, b) => a + b, 0) / S.ratings.length, p = R.partner, [, pa] = NERD[p.id] || [0, 4.5];
+  $('#rateHint').textContent = `locked · ${R.rate} ★${R.tags.size ? ' · ' + [...R.tags].join(', ') : ''}`;
+  $('#rateData').innerHTML = `your sessions avg <b>${avg.toFixed(1)}</b> · ${p.id} avg <b>${pa.toFixed(1)}</b><br>${R.rate >= 4 ? `4★+ means ${p.id} gets matched with you first next time` : `under 4★ means we'll match you with someone new`}`;
+  view.querySelector('.rp-rate').classList.add('locked'); $('#kMatch .knob-lab').textContent = 'match';
+  if (R.rate >= 4 && !R.endorsed) $('#pon').classList.add('nudge');
+}
+function toggleItem(i) {
+  const it = R.items[i]; it.done = !it.done; SFX.key();
+  const b = view.querySelector(`.item[data-i="${i}"]`); b.classList.toggle('done', it.done);
+  if (it.done) { S.kept[0]++; S.kept[1]++; react('✅', 2); } else { S.kept[0]--; S.kept[1]--; }
+  $('#keptPct').textContent = Math.round(S.kept[0] / S.kept[1] * 100) + '%';
+}
+function followUp(p) {
+  const d = new Date(Date.now() + 3 * 864e5); d.setHours(16, 0, 0, 0); const e = new Date(d.getTime() + 15 * 6e4);
+  const f = x => x.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const notes = R.items.map(it => `- ${it.who}: ${it.t} (${it.due})`).join('\\n');
+  const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MNTv Live//EN\r\nBEGIN:VEVENT\r\nUID:mntv-${Date.now()}@musicnerd\r\nDTSTAMP:${f(new Date())}\r\nDTSTART:${f(d)}\r\nDTEND:${f(e)}\r\nSUMMARY:MNTv rematch · ${p.id} × you\r\nDESCRIPTION:Next moves from session ${pad(S.tapes.length)}:\\n${notes}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' })); a.download = `mntv-rematch-${p.id}.ics`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
+  SFX.win(); toast(`rematch with ${p.id} · ${d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase()} 4pm · invite downloaded`);
+  $('.key[data-k="1"]').classList.add('lit');
+}
+function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0).toString(16).toUpperCase().padStart(8, '0'); }
+function endorse(p, topic) {
+  if (R.endorsed) { toast(`you already endorsed ${p.id} this session`); return; }
+  R.endorsed = true; const n = (NERD[p.id] = NERD[p.id] || [0, 4.5]); n[0]++;
+  const id = `PON-${pad(S.tapes.length)}-${p.id.toUpperCase()}-${hash(p.id + topic + Date.now()).slice(0, 4)}`;
+  S.endorsements.push({ to: p.id, topic, id });
+  const box = document.createElement('div'); box.className = 'pon-cert';
+  box.innerHTML = `<div class="cert"><svg class="stamp" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="c" d="M100,100 m-74,0 a74,74 0 1,1 148,0 a74,74 0 1,1 -148,0"/></defs><circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" stroke-width="2.5"/><text font-size="17" font-weight="900" letter-spacing="5" fill="currentColor"><textPath href="#c">PROOF OF NERD · PROOF OF NERD ·</textPath></text><text x="100" y="112" text-anchor="middle" font-size="40" fill="currentColor">🤓</text></svg>
+    <div class="cert-b"><div class="cert-k">nerd endorsement</div><div class="cert-t">you endorsed <b>${p.id}</b> for <b>${topic}</b></div>
+    <div class="cert-sig"><span>${face(YOU, 28)} you <i class="ok">signed</i></span><span id="cosig">${face(p, 28)} ${p.id} <i class="wait">signing…</i></span></div>
+    <div class="cert-m">receipt ${id} · session ${pad(S.tapes.length)} · ${R.rate ? R.rate + '★ · ' : ''}${Math.max(1, Math.round((Date.now() - R.callStart) / 60000))} min</div>
+    <div class="cert-m">${p.id} now has <b>${n[0]}</b> nerd endorsements in ${topic}</div></div></div>`;
+  view.appendChild(box); SFX.clunk(); setTimeout(() => SFX.win(), 260); buzz([30, 60, 30]);
+  setTimeout(() => { const c = $('#cosig'); if (c) c.innerHTML = `${face(p, 28)} ${p.id} <i class="ok">signed</i>`; S.myEndorse++; toast(`${p.id} countersigned · and endorsed you back for follow-through`); S.wire.push(`🏅 you endorsed ${p.id} for ${topic}`); marquee(); react('🏅', 3); }, 1800);
+  setTimeout(() => box.classList.add('tuck'), 4200); setTimeout(() => box.remove(), 4800);
+  const pb = $('#ponBtn'); if (pb) { pb.textContent = '🏅 endorsed'; pb.disabled = true; } $('#pon') && $('#pon').classList.remove('nudge');
+  $('.key[data-k="0"]').classList.add('lit');
+}
+function saveSkill(p) {
+  const ex = S.skills.find(k => k.by === p.id), t = SKILL_OF[p.id];
+  if (ex) { ex.uses++; ex.v = (ex.v || 1) + 1; ex.from = `tape ${pad(S.tapes.length)} · v${ex.v}`; } else S.skills.unshift({ by: p.id, from: `tape ${pad(S.tapes.length)} · ${S.tapes[0].date}`, uses: 1, ...t });
+  S.wire.push(`new skill · ${t.title}`); marquee(); strip(); return { merged: !!ex, v: ex ? ex.v : 1 };
+}
+function cart(k, i) { const m = M.find(x => x.id === k.by); return `<button class="cart" data-by="${k.by}" style="--c:${PAL[m.k][4]}"><div class="cart-lb">${face(m, 30)}<b>${k.title}</b></div><div class="cart-meta">${m.id} · 🏅 ${(NERD[k.by] || [0])[0]} · ${k.uses} installs${S.installed.includes(k.by) ? ' · ✅' : ''}</div><div class="cart-notch"></div></button>`; }
 function openSkill(by) { go('skill', { by }); }
 function learnLive(m) { if (!m.grind) { toast(`${m.id} isn't grinding right now · we'll ping you`); return; } R.partner = m; toast(`calling ${m.id} to learn it live`); go('tuning', { who: m }); }
 function toggleSkills() { R.skillsOn = !R.skillsOn; $('#skillsSw').classList.toggle('on', R.skillsOn); SFX.clunk(); lcdFlash(R.skillsOn ? 'ON' : 'OF', 'skills', pad(S.skills.length), 'saved', R.skillsOn ? 'CHATS → PLAYBOOKS' : 'SKILLS REC OFF'); if (R.mode === 'skills') go('skills'); toast(R.skillsOn ? 'skills rec on · both people see it' : 'skills rec off · chats stay off the record'); }
@@ -354,7 +446,7 @@ function exportSkill(k, m) {
   try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' })); a.download = `${slug}.SKILL.md`; document.body.appendChild(a); a.click(); a.remove(); } catch {}
   SFX.win(); toast('SKILL.md downloaded · drop it into your AI assistant');
 }
-function passAux() { R.auxIdx++; toast(`aux passed to ${R.partner ? R.partner.id : 'them'} · new key`); SFX.static(.25); react('🎧', 2); }
+function passAux() { if (R.sess) R.sess.aux++; R.auxIdx++; toast(`aux passed to ${R.partner ? R.partner.id : 'them'} · new key`); SFX.static(.25); react('🎧', 2); }
 function raise() { S.hands++; toast(`you're in c.y.'s queue · #${S.hands - 6}`); react('✋', 3); }
 function helpAsk(m) {
   if (R.playStep !== 2) { toast('wait for the ask'); return; }
@@ -429,7 +521,7 @@ function scaleSVG(size, n, range, labels, active) {
 }
 class Knob {
   constructor(root, o) {
-    this.root = root; this.btn = $('.knob', root); this.ind = $('.ind', root); Object.assign(this, { n: o.n, range: o.range, idx: o.idx, labels: o.labels, onStep: o.onStep, onPress: o.onPress, size: o.size });
+    this.root = root; this.btn = $('.knob', root); this.ind = $('.ind', root); Object.assign(this, { n: o.n, range: o.range, idx: o.idx, labels: o.labels, onStep: o.onStep, onPress: o.onPress, onTurn: o.onTurn, size: o.size });
     this.drawScale(); this.set(this.idx, true);
     let d = null;
     const ctr = () => { const r = this.btn.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
@@ -446,11 +538,12 @@ class Knob {
   angle(i) { return -this.range / 2 + i * this.step(); }
   drawScale() { $('.scale', this.root).innerHTML = scaleSVG(this.size, this.n, this.range, this.labels, this.idx); }
   set(i, silent) { this.idx = Math.max(0, Math.min(this.n - 1, i)); this.ind.style.transform = `rotate(${this.angle(this.idx)}deg)`; this.drawScale(); }
-  turn(dir) { const prev = this.idx; this.set(this.idx + dir); if (this.idx !== prev) setTimeout(knobLabels); if (this.idx === prev) { SFX.tick(); this.ind.animate([{ transform: `rotate(${this.angle(prev) + dir * 4}deg)` }, { transform: `rotate(${this.angle(prev)}deg)` }], { duration: 160 }); return; } SFX.tick(); this.onStep && this.onStep(this.idx, dir); }
+  turn(dir) { if (this.onTurn && this.onTurn(dir)) { SFX.tick(); return; } const prev = this.idx; this.set(this.idx + dir); if (this.idx !== prev) setTimeout(knobLabels); if (this.idx === prev) { SFX.tick(); this.ind.animate([{ transform: `rotate(${this.angle(prev) + dir * 4}deg)` }, { transform: `rotate(${this.angle(prev)}deg)` }], { duration: 160 }); return; } SFX.tick(); this.onStep && this.onStep(this.idx, dir); }
   press() { SFX.clunk(); this.btn.classList.add('pressed'); setTimeout(() => this.btn.classList.remove('pressed'), 120); this.onPress && this.onPress(); }
 }
 const matchKnob = new Knob($('#kMatch'), { n: 4, range: 240, idx: 0, size: 250, labels: FILTERS.map(f => f[0]),
   onStep: i => { R.filter = i; const role = FILTERS[i][1]; const c = grinding().filter(m => !role || m.role === role).length; lcdFlash(pad(c), 'grinding', pad(i + 1), 'filter', `MATCH: ${FILTERS[i][0].toUpperCase()}`); },
+  onTurn: dir => R.mode === 'after' && rateTurn(dir),
   onPress: () => matchPress() });
 const airKnob = new Knob($('#kAir'), { n: 2, range: 90, idx: 0, size: 96, labels: ['end', 'start'],
   onStep: i => setAir(i === 1), onPress: () => setAir(!R.air) });
@@ -469,8 +562,9 @@ function knobLabels() {
   $('#kVol .kn-l').textContent = R.vol ? `vol ${R.vol}` : 'muted';
   $('#kAdlib .kn-l').textContent = `adlib: ${ADLIBS[R.adlib][0]}`;
 }
-function fireAdlib() { if (R.onboard === 2) setOnboard(3); ADLIB_FX[R.adlib](); flashText(ADLIBS[R.adlib][1]); if (R.mode === 'call' && R.partner) setTimeout(() => react(['😂', '🔥', '🙌'][Math.random() * 3 | 0], 3), 400); }
+function fireAdlib() { if (R.mode === 'call' && R.sess) R.sess.adYou++; if (R.onboard === 2) setOnboard(3); ADLIB_FX[R.adlib](); flashText(ADLIBS[R.adlib][1]); if (R.mode === 'call' && R.partner) setTimeout(() => react(['😂', '🔥', '🙌'][Math.random() * 3 | 0], 3), 400); }
 function matchPress() {
+  if (R.mode === 'after' && !R.rateLocked) { lockRate(); return; }
   if (R.incoming) { const p = R.incoming; R.incoming = null; hideRing(); $('#kMatch').classList.remove('ringing'); R.partner = p; go('call'); scheduleIncoming(); return; }
   if (R.mode === 'call' || R.mode === 'tuning') { go('after'); return; }
   if (R.mode === 'play') { nextDrop(false); return; }
